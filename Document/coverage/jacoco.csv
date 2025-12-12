@@ -1,0 +1,28 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Crazy_Roads,com.example.crazy_roads.gui,MenuGameOver,243,0,6,0,51,0,10,0,7,0
+Crazy_Roads,com.example.crazy_roads.gui,PageJeuSubwaySurfers.new AnimationTimer() {...},17,0,2,0,5,0,3,0,2,0
+Crazy_Roads,com.example.crazy_roads.gui,PageJeu.new AnimationTimer() {...},35,0,4,0,8,0,4,0,2,0
+Crazy_Roads,com.example.crazy_roads.gui,HUD.new AnimationTimer() {...},4,6,0,0,2,1,1,1,1,1
+Crazy_Roads,com.example.crazy_roads.gui,HUD,219,670,34,14,49,156,31,25,8,24
+Crazy_Roads,com.example.crazy_roads.gui,PageJeuMarioKart,1044,0,102,0,241,0,74,0,23,0
+Crazy_Roads,com.example.crazy_roads.gui,GameStateManager,0,3,0,0,0,1,0,1,0,1
+Crazy_Roads,com.example.crazy_roads.gui,MenuOptions,865,0,6,0,185,0,26,0,23,0
+Crazy_Roads,com.example.crazy_roads.gui,PageJeuMarioKart.new AnimationTimer() {...},17,0,2,0,5,0,3,0,2,0
+Crazy_Roads,com.example.crazy_roads.gui,PageJeu,1021,0,70,0,206,0,54,0,19,0
+Crazy_Roads,com.example.crazy_roads.gui,MenuPause,271,0,12,0,64,0,15,0,9,0
+Crazy_Roads,com.example.crazy_roads.gui,BestScoresMenu,713,0,12,0,144,0,19,0,13,0
+Crazy_Roads,com.example.crazy_roads.gui,PageJeuSubwaySurfers,1026,0,72,0,230,0,57,0,21,0
+Crazy_Roads,com.example.crazy_roads.gui,MenuWin,243,0,6,0,51,0,10,0,7,0
+Crazy_Roads,com.example.crazy_roads.gui,PageAccueil,274,0,0,0,63,0,9,0,9,0
+Crazy_Roads,com.example.crazy_roads.models,Obstacle,159,66,38,0,38,27,27,13,8,13
+Crazy_Roads,com.example.crazy_roads.models,Map,249,296,23,19,35,59,17,17,1,12
+Crazy_Roads,com.example.crazy_roads.models,Car,110,181,20,16,27,52,17,21,5,15
+Crazy_Roads,com.example.crazy_roads.models,Frame,31,49,6,2,7,16,4,10,1,9
+Crazy_Roads,com.example.crazy_roads.modes,ModeSubwaySurfers,84,163,20,6,21,48,22,11,9,11
+Crazy_Roads,com.example.crazy_roads.modes,ModeMarioKart,45,160,16,12,11,46,16,19,4,17
+Crazy_Roads,com.example.crazy_roads.generation,GenerationProcedurale,0,102,0,8,0,25,0,9,0,5
+Crazy_Roads,com.example.crazy_roads.managers,ScoreManager,14,285,4,24,4,59,6,19,2,9
+Crazy_Roads,com.example.crazy_roads.managers,Settings,157,107,18,3,43,36,16,18,3,17
+Crazy_Roads,com.example.crazy_roads.managers,MusicManager,70,12,6,4,22,8,9,4,4,4
+Crazy_Roads,com.example.crazy_roads.managers,RessourceLoader,150,91,19,11,34,17,14,7,2,4
+Crazy_Roads,com.example.crazy_roads,Main,12,0,0,0,5,0,3,0,3,0

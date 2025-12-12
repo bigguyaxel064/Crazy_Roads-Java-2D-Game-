@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RessourceLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.managers</a> &gt; <span class="el_source">RessourceLoader.java</span></div><h1>RessourceLoader.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.managers;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
+import java.io.InputStream;
+
+<span class="nc" id="L9">public class RessourceLoader {</span>
+
+    public static Image loadImage(String path) {
+<span class="fc" id="L12">        return loadImageSafe(path, 452, 800);</span>
+    }
+
+    public static Image loadImageSafe(String path, double targetWidth, double targetHeight) {
+        try {
+<span class="fc" id="L17">            InputStream stream = RessourceLoader.class.getResourceAsStream(path);</span>
+
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">            if (stream == null) {</span>
+<span class="fc" id="L20">                return createFallbackImage(targetWidth, targetHeight);</span>
+            }
+
+<span class="nc" id="L23">            Image originalImage = new Image(stream);</span>
+
+<span class="nc bnc" id="L25" title="All 2 branches missed.">            if (originalImage.isError()) {</span>
+<span class="nc" id="L26">                return createFallbackImage(targetWidth, targetHeight);</span>
+            }
+
+<span class="nc" id="L29">            Image resizedImage = resizeImage(originalImage, targetWidth, targetHeight);</span>
+
+<span class="nc bnc" id="L31" title="All 4 branches missed.">            if (resizedImage == null || resizedImage.isError()) {</span>
+<span class="nc" id="L32">                return createFallbackImage(targetWidth, targetHeight);</span>
+            }
+
+<span class="nc" id="L35">            return resizedImage;</span>
+
+<span class="nc" id="L37">        } catch (Exception e) {</span>
+<span class="nc" id="L38">            return createFallbackImage(targetWidth, targetHeight);</span>
+        }
+    }
+
+    private static Image resizeImage(Image original, double targetWidth, double targetHeight) {
+        try {
+<span class="nc" id="L44">            double originalWidth = original.getWidth();</span>
+<span class="nc" id="L45">            double originalHeight = original.getHeight();</span>
+
+<span class="nc" id="L47">            double ratio = Math.min(targetWidth / originalWidth, targetHeight / originalHeight);</span>
+
+<span class="nc" id="L49">            int newWidth = (int) (originalWidth * ratio);</span>
+<span class="nc" id="L50">            int newHeight = (int) (originalHeight * ratio);</span>
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            if (newWidth &gt; 2048) newWidth = 2048;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (newHeight &gt; 2048) newHeight = 2048;</span>
+
+<span class="nc" id="L55">            PixelReader pixelReader = original.getPixelReader();</span>
+<span class="nc" id="L56">            WritableImage resizedImage = new WritableImage(newWidth, newHeight);</span>
+<span class="nc" id="L57">            PixelWriter pixelWriter = resizedImage.getPixelWriter();</span>
+
+<span class="nc" id="L59">            double xRatio = originalWidth / newWidth;</span>
+<span class="nc" id="L60">            double yRatio = originalHeight / newHeight;</span>
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            for (int y = 0; y &lt; newHeight; y++) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                for (int x = 0; x &lt; newWidth; x++) {</span>
+<span class="nc" id="L64">                    int srcX = (int) (x * xRatio);</span>
+<span class="nc" id="L65">                    int srcY = (int) (y * yRatio);</span>
+
+<span class="nc" id="L67">                    srcX = Math.min(srcX, (int)originalWidth - 1);</span>
+<span class="nc" id="L68">                    srcY = Math.min(srcY, (int)originalHeight - 1);</span>
+
+<span class="nc" id="L70">                    pixelWriter.setArgb(x, y, pixelReader.getArgb(srcX, srcY));</span>
+                }
+            }
+
+<span class="nc" id="L74">            return resizedImage;</span>
+
+<span class="nc" id="L76">        } catch (Exception e) {</span>
+<span class="nc" id="L77">            return null;</span>
+        }
+    }
+
+    private static Image createFallbackImage(double width, double height) {
+<span class="fc" id="L82">        WritableImage fallback = new WritableImage((int)width, (int)height);</span>
+<span class="fc" id="L83">        PixelWriter writer = fallback.getPixelWriter();</span>
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        for (int y = 0; y &lt; height; y++) {</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            for (int x = 0; x &lt; width; x++) {</span>
+<span class="fc" id="L87">                int gray = 50 + (y * 100 / (int)height);</span>
+<span class="fc" id="L88">                int color = (255 &lt;&lt; 24) | (gray &lt;&lt; 8);</span>
+<span class="fc" id="L89">                writer.setArgb(x, y, color);</span>
+            }
+        }
+
+<span class="fc" id="L93">        return fallback;</span>
+    }
+
+    public static boolean isImageValid(Image image) {
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (image == null) {</span>
+<span class="fc" id="L98">            return false;</span>
+        }
+
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (image.isError()) {</span>
+<span class="nc" id="L102">            return false;</span>
+        }
+
+<span class="pc bpc" id="L105" title="2 of 4 branches missed.">        if (image.getWidth() &lt;= 0 || image.getHeight() &lt;= 0) {</span>
+<span class="nc" id="L106">            return false;</span>
+        }
+
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">        return !(image.getProgress() &lt; 1.0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

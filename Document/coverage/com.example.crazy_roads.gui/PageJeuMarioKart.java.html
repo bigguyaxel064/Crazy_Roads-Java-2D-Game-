@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PageJeuMarioKart.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.gui</a> &gt; <span class="el_source">PageJeuMarioKart.java</span></div><h1>PageJeuMarioKart.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.gui;
+
+import com.example.crazy_roads.managers.RessourceLoader;
+import com.example.crazy_roads.managers.ScoreManager;
+import com.example.crazy_roads.managers.Settings;
+import com.example.crazy_roads.models.Map;
+import com.example.crazy_roads.models.Obstacle;
+import com.example.crazy_roads.modes.ModeMarioKart;
+import com.example.crazy_roads.generation.GenerationProcedurale;
+import javafx.animation.AnimationTimer;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.geometry.VPos;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
+public class PageJeuMarioKart implements IGamePage {
+    private Stage primaryStage;
+    private Scene gameScene;
+    private BorderPane root;
+    private Canvas canvas;
+    private GraphicsContext gc;
+
+    private ModeMarioKart gameMode;
+    private Map Map;
+    private HUD hud;
+    private GenerationProcedurale obstacleGenerator;
+    private List&lt;Obstacle&gt; obstacles;
+    private double obstacleScrollOffset;
+    
+    private long lastUpdateTime;
+    
+    private AnimationTimer gameLoop;
+<span class="nc" id="L50">    private boolean isPaused = false;</span>
+    
+    private double canvasWidth;
+    private double canvasHeight;
+    
+    private static final double ROAD_WIDTH = 452;
+    private double roadX;
+    
+    private Image carImage;
+    private Image blueBarrelImage;
+    private Image redBarrelImage;
+    private static final double CAR_WIDTH = 40;
+    private static final double CAR_HEIGHT = 65;
+    
+    private static final int LANE_COUNT = 3;
+    private double laneWidth;
+    private double[] lanePositions;
+    
+    private static final double CAR_Y_POSITION = 500;
+<span class="nc" id="L69">    private double carYOffset = 0;</span>
+<span class="nc" id="L70">    private boolean finishLineVisible = false;</span>
+<span class="nc" id="L71">    private boolean scoreSaved = false;</span>
+
+<span class="nc" id="L73">    public PageJeuMarioKart(Stage primaryStage) {</span>
+<span class="nc" id="L74">        this.primaryStage = primaryStage;</span>
+        
+<span class="nc" id="L76">        Screen screen = Screen.getPrimary();</span>
+<span class="nc" id="L77">        Rectangle2D bounds = screen.getVisualBounds();</span>
+        
+<span class="nc" id="L79">        canvasWidth = bounds.getWidth();</span>
+<span class="nc" id="L80">        canvasHeight = bounds.getHeight();</span>
+        
+<span class="nc" id="L82">        initializeGame();</span>
+<span class="nc" id="L83">        setupUI();</span>
+<span class="nc" id="L84">        setupControls();</span>
+<span class="nc" id="L85">        startGameLoop();</span>
+<span class="nc" id="L86">    }</span>
+    
+    private void initializeGame() {
+<span class="nc" id="L89">        gameMode = new ModeMarioKart();</span>
+<span class="nc" id="L90">        gameMode.start();</span>
+        
+<span class="nc" id="L92">        Map = new Map(true);</span>
+<span class="nc" id="L93">        Map.setScrollSpeed(5.0);</span>
+        
+<span class="nc" id="L95">        obstacleGenerator = new GenerationProcedurale();</span>
+<span class="nc" id="L96">        obstacles = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L97">        obstacleScrollOffset = -500;</span>
+        
+<span class="nc" id="L99">        hud = new HUD();</span>
+<span class="nc" id="L100">        hud.setTimeAttackMode();</span>
+<span class="nc" id="L101">        hud.setLives(gameMode.getLives());</span>
+        
+<span class="nc" id="L103">        carYOffset = 0;</span>
+<span class="nc" id="L104">        finishLineVisible = false;</span>
+        
+<span class="nc" id="L106">        lastUpdateTime = System.currentTimeMillis();</span>
+        
+<span class="nc" id="L108">        roadX = (canvasWidth - ROAD_WIDTH) / 2;</span>
+        
+<span class="nc" id="L110">        double roadMargin = 90;</span>
+<span class="nc" id="L111">        double actualRoadWidth = ROAD_WIDTH - (2 * roadMargin);</span>
+        
+<span class="nc" id="L113">        laneWidth = actualRoadWidth / LANE_COUNT;</span>
+<span class="nc" id="L114">        lanePositions = new double[LANE_COUNT];</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        for (int i = 0; i &lt; LANE_COUNT; i++) {</span>
+<span class="nc" id="L116">            lanePositions[i] = roadX + roadMargin + (i * laneWidth) + (laneWidth / 2) - (CAR_WIDTH / 2);</span>
+        }
+        
+<span class="nc" id="L119">        loadCarImage();</span>
+<span class="nc" id="L120">        loadObstacleImages();</span>
+<span class="nc" id="L121">    }</span>
+    
+    private void loadCarImage() {
+        try {
+<span class="nc" id="L125">            String carPath = &quot;/images/Car/g3219.png&quot;;</span>
+<span class="nc" id="L126">            carImage = RessourceLoader.loadImage(carPath);</span>
+            
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            if (!RessourceLoader.isImageValid(carImage)) {</span>
+<span class="nc" id="L129">                carImage = null;</span>
+            }
+<span class="nc" id="L131">        } catch (Exception e) {</span>
+<span class="nc" id="L132">            carImage = null;</span>
+<span class="nc" id="L133">        }</span>
+<span class="nc" id="L134">    }</span>
+    
+    private void loadObstacleImages() {
+        try {
+<span class="nc" id="L138">            String bluePath = &quot;/images/Car/obstacles/barrel_blue_down 1.png&quot;;</span>
+<span class="nc" id="L139">            blueBarrelImage = RessourceLoader.loadImage(bluePath);</span>
+            
+<span class="nc" id="L141">            String redPath = &quot;/images/Car/obstacles/barrel_red_down 1.png&quot;;</span>
+<span class="nc" id="L142">            redBarrelImage = RessourceLoader.loadImage(redPath);</span>
+            
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (!RessourceLoader.isImageValid(blueBarrelImage)) {</span>
+<span class="nc" id="L145">                blueBarrelImage = null;</span>
+            }
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (!RessourceLoader.isImageValid(redBarrelImage)) {</span>
+<span class="nc" id="L148">                redBarrelImage = null;</span>
+            }
+<span class="nc" id="L150">        } catch (Exception e) {</span>
+<span class="nc" id="L151">            blueBarrelImage = null;</span>
+<span class="nc" id="L152">            redBarrelImage = null;</span>
+<span class="nc" id="L153">        }</span>
+<span class="nc" id="L154">    }</span>
+    
+    private void setupUI() {
+<span class="nc" id="L157">        root = new BorderPane();</span>
+<span class="nc" id="L158">        root.setStyle(&quot;-fx-background-color: #1a1a2e;&quot;);</span>
+        
+<span class="nc" id="L160">        canvas = new Canvas(canvasWidth, canvasHeight);</span>
+<span class="nc" id="L161">        gc = canvas.getGraphicsContext2D();</span>
+<span class="nc" id="L162">        gc.setImageSmoothing(true);</span>
+        
+<span class="nc" id="L164">        StackPane canvasContainer = new StackPane(canvas);</span>
+<span class="nc" id="L165">        canvasContainer.setAlignment(Pos.CENTER);</span>
+        
+<span class="nc" id="L167">        root.setCenter(canvasContainer);</span>
+<span class="nc" id="L168">        root.setTop(hud.getHUDRoot());</span>
+        
+<span class="nc" id="L170">        gameScene = new Scene(root, canvasWidth, canvasHeight);</span>
+        
+<span class="nc" id="L172">        primaryStage.setScene(gameScene);</span>
+<span class="nc" id="L173">        primaryStage.setMaximized(true);</span>
+<span class="nc" id="L174">        primaryStage.show();</span>
+<span class="nc" id="L175">    }</span>
+
+    private void setupControls() {
+<span class="nc" id="L178">        Settings settings = Settings.getInstance();</span>
+
+<span class="nc" id="L180">        gameScene.setOnKeyPressed(event -&gt; {</span>
+<span class="nc bnc" id="L181" title="All 4 branches missed.">            if (isPaused &amp;&amp; event.getCode() != settings.getPauseKey()) {</span>
+<span class="nc" id="L182">                return;</span>
+            }
+
+<span class="nc" id="L185">            KeyCode code = event.getCode();</span>
+
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (code == settings.getLeftKey()) {</span>
+<span class="nc" id="L188">                gameMode.moveLeft();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            } else if (code == settings.getRightKey()) {</span>
+<span class="nc" id="L190">                gameMode.moveRight();</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">            } else if (code == settings.getBoostKey()) {</span>
+<span class="nc" id="L192">                gameMode.activateBoost();</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            } else if (code == settings.getPauseKey()) {</span>
+<span class="nc" id="L194">                togglePause();</span>
+            }
+<span class="nc" id="L196">        });</span>
+<span class="nc" id="L197">    }</span>
+
+    private void startGameLoop() {
+<span class="nc" id="L200">        lastUpdateTime = System.currentTimeMillis();</span>
+        
+<span class="nc" id="L202">        gameLoop = new AnimationTimer() {</span>
+            @Override
+            public void handle(long now) {
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                if (!isPaused) {</span>
+<span class="nc" id="L206">                    update();</span>
+<span class="nc" id="L207">                    render();</span>
+                }
+<span class="nc" id="L209">            }</span>
+        };
+<span class="nc" id="L211">        gameLoop.start();</span>
+<span class="nc" id="L212">    }</span>
+    
+    private void update() {
+<span class="nc bnc" id="L215" title="All 4 branches missed.">        if (gameMode.isGameOver() || gameMode.isRaceFinished()) {</span>
+<span class="nc" id="L216">            return;</span>
+        }
+        
+<span class="nc" id="L219">        long currentTime = System.currentTimeMillis();</span>
+<span class="nc" id="L220">        double deltaTime = (currentTime - lastUpdateTime) / 1000.0;</span>
+<span class="nc" id="L221">        lastUpdateTime = currentTime;</span>
+        
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if (deltaTime &gt; 0.033) {</span>
+<span class="nc" id="L224">            deltaTime = 0.033;</span>
+        }
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (deltaTime &lt; 0.001) {</span>
+<span class="nc" id="L227">            return;</span>
+        }
+        
+<span class="nc" id="L230">        gameMode.update();</span>
+        
+<span class="nc" id="L232">        int currentFrame = Map.getFramesScrolled();</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        boolean onFinishLine = currentFrame &gt;= 98;</span>
+        
+<span class="nc" id="L235">        double currentSpeed = gameMode.getSpeed();</span>
+        
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (!onFinishLine) {</span>
+<span class="nc" id="L238">            Map.setScrollSpeed(currentSpeed);</span>
+<span class="nc" id="L239">            Map.update();</span>
+<span class="nc" id="L240">            obstacleScrollOffset += currentSpeed;</span>
+<span class="nc" id="L241">            finishLineVisible = false;</span>
+<span class="nc" id="L242">            carYOffset = 0;</span>
+        } else {
+<span class="nc" id="L244">            Map.setScrollSpeed(0);</span>
+<span class="nc" id="L245">            finishLineVisible = true;</span>
+<span class="nc" id="L246">            carYOffset -= currentSpeed;</span>
+            
+<span class="nc bnc" id="L248" title="All 4 branches missed.">            if (carYOffset &lt;= -600 &amp;&amp; !gameMode.isRaceFinished()) {</span>
+<span class="nc" id="L249">                gameMode.incrementFrame();</span>
+            }
+        }
+        
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (!onFinishLine) {</span>
+<span class="nc" id="L254">            List&lt;Obstacle&gt; newObstacles = obstacleGenerator.generateObstacles(obstacleScrollOffset);</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">            if (!newObstacles.isEmpty()) {</span>
+<span class="nc" id="L256">                Random random = new Random();</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                for (Obstacle obs : newObstacles) {</span>
+<span class="nc" id="L258">                    obs.setColorType(random.nextInt(2));</span>
+<span class="nc" id="L259">                }</span>
+<span class="nc" id="L260">                obstacles.addAll(newObstacles);</span>
+            }
+            
+<span class="nc" id="L263">            updateObstacles(currentSpeed);</span>
+        }
+        
+<span class="nc" id="L266">        checkCollisions();</span>
+        
+<span class="nc bnc" id="L268" title="All 4 branches missed.">        if (currentFrame &gt;= 99 &amp;&amp; !gameMode.isRaceFinished()) {</span>
+<span class="nc" id="L269">            gameMode.incrementFrame();</span>
+        }
+        
+<span class="nc" id="L272">        hud.setTime(gameMode.getRaceTime());</span>
+<span class="nc" id="L273">        hud.setLives(gameMode.getLives());</span>
+<span class="nc" id="L274">        hud.setBoostActive(gameMode.isBoostActive());</span>
+<span class="nc" id="L275">    }</span>
+    
+    private void updateObstacles(double speed) {
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        for (Obstacle obstacle : obstacles) {</span>
+<span class="nc" id="L279">            obstacle.setPosition(obstacle.getPosition() + speed);</span>
+<span class="nc" id="L280">        }</span>
+        
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        obstacles.removeIf(obstacle -&gt; obstacle.getPosition() &gt; canvasHeight + 100);</span>
+<span class="nc" id="L283">    }</span>
+    
+    private void checkCollisions() {
+<span class="nc" id="L286">        int currentLane = gameMode.getLane();</span>
+<span class="nc" id="L287">        double carTop = CAR_Y_POSITION + carYOffset;</span>
+<span class="nc" id="L288">        double carBottom = CAR_Y_POSITION + carYOffset + CAR_HEIGHT;</span>
+        
+<span class="nc" id="L290">        Iterator&lt;Obstacle&gt; iterator = obstacles.iterator();</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        while (iterator.hasNext()) {</span>
+<span class="nc" id="L292">            Obstacle obstacle = iterator.next();</span>
+            
+<span class="nc bnc" id="L294" title="All 2 branches missed.">            if (obstacle.getLane() == currentLane) {</span>
+<span class="nc" id="L295">                double obsTop = obstacle.getPosition();</span>
+<span class="nc" id="L296">                double obsBottom = obstacle.getPosition() + obstacle.getSize();</span>
+                
+<span class="nc bnc" id="L298" title="All 4 branches missed.">                if (!(carBottom &lt; obsTop || carTop &gt; obsBottom)) {</span>
+<span class="nc" id="L299">                    gameMode.getCar().collide();</span>
+<span class="nc" id="L300">                    iterator.remove();</span>
+<span class="nc" id="L301">                    break;</span>
+                }
+            }
+<span class="nc" id="L304">        }</span>
+<span class="nc" id="L305">    }</span>
+    
+    private void render() {
+<span class="nc" id="L308">        gc.setFill(Color.web(&quot;#2ecc71&quot;));</span>
+<span class="nc" id="L309">        gc.fillRect(0, 0, canvasWidth, canvasHeight);</span>
+        
+<span class="nc" id="L311">        gc.save();</span>
+        
+<span class="nc" id="L313">        gc.beginPath();</span>
+<span class="nc" id="L314">        gc.rect(roadX, 0, ROAD_WIDTH, canvasHeight);</span>
+<span class="nc" id="L315">        gc.clip();</span>
+        
+<span class="nc" id="L317">        Map.render(gc, ROAD_WIDTH, roadX);</span>
+        
+<span class="nc" id="L319">        drawObstacles();</span>
+        
+<span class="nc" id="L321">        gc.restore();</span>
+        
+<span class="nc" id="L323">        drawCar();</span>
+        
+<span class="nc" id="L325">        int currentFrame = Map.getFramesScrolled();</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        if (currentFrame &gt;= 98) {</span>
+<span class="nc" id="L327">            drawFinishLineMessage();</span>
+        }
+        
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (isPaused) {</span>
+<span class="nc" id="L331">            drawPauseOverlay();</span>
+        }
+        
+<span class="nc bnc" id="L334" title="All 4 branches missed.">        if (gameMode.isGameOver() || gameMode.isRaceFinished()) {</span>
+<span class="nc" id="L335">            drawGameOverOverlay();</span>
+        }
+<span class="nc" id="L337">    }</span>
+    
+    private void drawCar() {
+<span class="nc" id="L340">        int currentLane = gameMode.getLane();</span>
+<span class="nc" id="L341">        double carX = lanePositions[currentLane];</span>
+<span class="nc" id="L342">        double carY = CAR_Y_POSITION + carYOffset;</span>
+        
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        if (RessourceLoader.isImageValid(carImage)) {</span>
+<span class="nc" id="L345">            double renderWidth = CAR_WIDTH * 1.6;</span>
+<span class="nc" id="L346">            double renderHeight = CAR_HEIGHT * 1.6;</span>
+<span class="nc" id="L347">            gc.drawImage(carImage, carX - (renderWidth - CAR_WIDTH)/2, carY - (renderHeight - CAR_HEIGHT)/2, renderWidth, renderHeight);</span>
+<span class="nc" id="L348">        } else {</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">            gc.setFill(gameMode.isBoostActive() ? Color.GOLD : Color.BROWN);</span>
+<span class="nc" id="L350">            gc.fillRoundRect(carX, carY, CAR_WIDTH, CAR_HEIGHT, 10, 10);</span>
+        }
+<span class="nc" id="L352">    }</span>
+    
+    private void drawObstacles() {
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        for (Obstacle obstacle : obstacles) {</span>
+<span class="nc" id="L356">            int lane = obstacle.getLane();</span>
+            
+<span class="nc bnc" id="L358" title="All 4 branches missed.">            if (lane &lt; 0 || lane &gt;= lanePositions.length) {</span>
+<span class="nc" id="L359">                continue;</span>
+            }
+            
+<span class="nc" id="L362">            double obstacleX = lanePositions[lane];</span>
+<span class="nc" id="L363">            double obstacleY = obstacle.getPosition();</span>
+<span class="nc" id="L364">            double obstacleSize = obstacle.getSize();</span>
+            
+<span class="nc bnc" id="L366" title="All 4 branches missed.">            if (obstacleY + obstacleSize &lt; 0 || obstacleY &gt; canvasHeight) {</span>
+<span class="nc" id="L367">                continue;</span>
+            }
+            
+<span class="nc bnc" id="L370" title="All 2 branches missed.">            Image obstacleImage = (obstacle.getColorType() == 0) ? blueBarrelImage : redBarrelImage;</span>
+            
+<span class="nc bnc" id="L372" title="All 2 branches missed.">            if (RessourceLoader.isImageValid(obstacleImage)) {</span>
+<span class="nc" id="L373">                gc.drawImage(obstacleImage, obstacleX, obstacleY, CAR_WIDTH, CAR_WIDTH);</span>
+            } else {
+<span class="nc" id="L375">                gc.setFill(Color.ORANGERED);</span>
+<span class="nc" id="L376">                gc.fillRect(obstacleX, obstacleY, CAR_WIDTH, obstacleSize);</span>
+            }
+<span class="nc" id="L378">        }</span>
+<span class="nc" id="L379">    }</span>
+    
+    private void drawFinishLineMessage() {
+<span class="nc" id="L382">        gc.setFill(Color.LIME);</span>
+<span class="nc" id="L383">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 48));</span>
+<span class="nc" id="L384">        gc.setTextAlign(TextAlignment.CENTER);</span>
+<span class="nc" id="L385">        gc.fillText(&quot;LIGNE D'ARRIVÉE!&quot;, canvasWidth / 2, 200);</span>
+<span class="nc" id="L386">        gc.setTextAlign(TextAlignment.LEFT);</span>
+<span class="nc" id="L387">    }</span>
+    
+    private void drawPauseOverlay() {
+<span class="nc" id="L390">        gc.setFill(Color.rgb(0, 0, 0, 0.7));</span>
+<span class="nc" id="L391">        gc.fillRect(0, 0, canvasWidth, canvasHeight);</span>
+        
+<span class="nc" id="L393">        gc.setFill(Color.WHITE);</span>
+<span class="nc" id="L394">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 60));</span>
+<span class="nc" id="L395">        gc.setTextAlign(TextAlignment.CENTER);</span>
+<span class="nc" id="L396">        gc.setTextBaseline(VPos.CENTER);</span>
+<span class="nc" id="L397">        gc.fillText(&quot;PAUSE&quot;, canvasWidth / 2, canvasHeight / 2 - 50);</span>
+        
+<span class="nc" id="L399">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 24));</span>
+<span class="nc" id="L400">        gc.fillText(&quot;Appuyez sur P ou ECHAP pour reprendre&quot;, canvasWidth / 2, canvasHeight / 2 + 20);</span>
+        
+<span class="nc" id="L402">        gc.setTextAlign(TextAlignment.LEFT);</span>
+<span class="nc" id="L403">        gc.setTextBaseline(VPos.BASELINE);</span>
+<span class="nc" id="L404">    }</span>
+    
+    private void drawGameOverOverlay() {
+<span class="nc" id="L407">        gameLoop.stop();</span>
+        
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (!scoreSaved) {</span>
+<span class="nc" id="L410">            ScoreManager scoreManager = ScoreManager.getInstance();</span>
+<span class="nc" id="L411">            int raceTime = (int) gameMode.getRaceTime();</span>
+<span class="nc" id="L412">            boolean isNewRecord = scoreManager.updateBestScore(ScoreManager.MODE_TIME_ATTACK, raceTime);</span>
+<span class="nc" id="L413">            scoreSaved = true;</span>
+            
+<span class="nc bnc" id="L415" title="All 2 branches missed.">            if (gameMode.isRaceFinished()) {</span>
+<span class="nc" id="L416">                new MenuWin(primaryStage, gameScene, raceTime, isNewRecord, true);</span>
+            } else {
+<span class="nc" id="L418">                new MenuGameOver(primaryStage, gameScene, raceTime, isNewRecord, true);</span>
+            }
+        }
+<span class="nc" id="L421">    }</span>
+    
+    private void togglePause() {
+<span class="nc bnc" id="L424" title="All 4 branches missed.">        if (gameMode.isGameOver() || gameMode.isRaceFinished()) return;</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">        isPaused = !isPaused;</span>
+        
+<span class="nc bnc" id="L427" title="All 2 branches missed.">        if (isPaused) {</span>
+<span class="nc" id="L428">            new MenuPause(primaryStage, gameScene, this);</span>
+        } else {
+<span class="nc" id="L430">            lastUpdateTime = System.currentTimeMillis();</span>
+        }
+<span class="nc" id="L432">    }</span>
+
+    public void pause() {
+<span class="nc bnc" id="L435" title="All 4 branches missed.">        if (!gameMode.isGameOver() &amp;&amp; !gameMode.isRaceFinished()) {</span>
+<span class="nc" id="L436">            isPaused = true;</span>
+        }
+<span class="nc" id="L438">    }</span>
+
+    public void resume() {
+<span class="nc" id="L441">        isPaused = false;</span>
+<span class="nc" id="L442">        lastUpdateTime = System.currentTimeMillis();</span>
+<span class="nc" id="L443">    }</span>
+
+    public void stop() {
+<span class="nc bnc" id="L446" title="All 2 branches missed.">        if (gameLoop != null) {</span>
+<span class="nc" id="L447">            gameLoop.stop();</span>
+        }
+<span class="nc" id="L449">    }</span>
+
+    public Scene getScene() {
+<span class="nc" id="L452">        return primaryStage.getScene();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

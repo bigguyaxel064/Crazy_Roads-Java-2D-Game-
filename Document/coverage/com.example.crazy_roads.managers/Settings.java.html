@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Settings.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.managers</a> &gt; <span class="el_source">Settings.java</span></div><h1>Settings.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.managers;
+
+import javafx.scene.input.KeyCode;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class Settings {
+    private static final String SETTINGS_FILE = &quot;settings.ini&quot;;
+    private static Settings instance;
+<span class="fc" id="L16">    private double musicVolume = 0.5;</span>
+<span class="fc" id="L17">    private double soundVolume = 0.5;</span>
+<span class="fc" id="L18">    private double screenWidth = 1920;</span>
+<span class="fc" id="L19">    private double screenHeight = 1080;</span>
+<span class="fc" id="L20">    private KeyCode leftKey = KeyCode.LEFT;</span>
+<span class="fc" id="L21">    private KeyCode rightKey = KeyCode.RIGHT;</span>
+<span class="fc" id="L22">    private KeyCode pauseKey = KeyCode.P;</span>
+<span class="fc" id="L23">    private KeyCode boostKey = KeyCode.SPACE;</span>
+
+<span class="fc" id="L25">    private Settings() {</span>
+<span class="fc" id="L26">        loadSettings();</span>
+<span class="fc" id="L27">    }</span>
+
+    public static Settings getInstance() {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L31">            instance = new Settings();</span>
+        }
+<span class="fc" id="L33">        return instance;</span>
+    }
+
+    private void loadSettings() {
+        try {
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">            if (!Files.exists(Paths.get(SETTINGS_FILE))) return;</span>
+<span class="nc" id="L39">            try (BufferedReader reader = new BufferedReader(new FileReader(SETTINGS_FILE))) {</span>
+                String line;
+<span class="nc bnc" id="L41" title="All 2 branches missed.">                while ((line = reader.readLine()) != null) {</span>
+<span class="nc bnc" id="L42" title="All 4 branches missed.">                    if (line.isEmpty() || line.startsWith(&quot;#&quot;)) continue;</span>
+<span class="nc" id="L43">                    String[] parts = line.split(&quot;=&quot;, 2);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">                    if (parts.length != 2) continue;</span>
+<span class="nc" id="L45">                    String key = parts[0].trim();</span>
+<span class="nc" id="L46">                    String value = parts[1].trim();</span>
+<span class="nc bnc" id="L47" title="All 9 branches missed.">                    switch (key) {</span>
+                        case &quot;musicVolume&quot;:
+<span class="nc" id="L49">                            musicVolume = Double.parseDouble(value);</span>
+<span class="nc" id="L50">                            break;</span>
+                        case &quot;soundVolume&quot;:
+<span class="nc" id="L52">                            soundVolume = Double.parseDouble(value);</span>
+<span class="nc" id="L53">                            break;</span>
+                        case &quot;screenWidth&quot;:
+<span class="nc" id="L55">                            screenWidth = Double.parseDouble(value);</span>
+<span class="nc" id="L56">                            break;</span>
+                        case &quot;screenHeight&quot;:
+<span class="nc" id="L58">                            screenHeight = Double.parseDouble(value);</span>
+<span class="nc" id="L59">                            break;</span>
+                        case &quot;leftKey&quot;:
+<span class="nc" id="L61">                            leftKey = KeyCode.valueOf(value);</span>
+<span class="nc" id="L62">                            break;</span>
+                        case &quot;rightKey&quot;:
+<span class="nc" id="L64">                            rightKey = KeyCode.valueOf(value);</span>
+<span class="nc" id="L65">                            break;</span>
+                        case &quot;pauseKey&quot;:
+<span class="nc" id="L67">                            pauseKey = KeyCode.valueOf(value);</span>
+<span class="nc" id="L68">                            break;</span>
+                        case &quot;boostKey&quot;:
+<span class="nc" id="L70">                            boostKey = KeyCode.valueOf(value);</span>
+                            break;
+
+                    }
+<span class="nc" id="L74">                }</span>
+            }
+<span class="nc" id="L76">        } catch (IOException | NumberFormatException e) {</span>
+<span class="nc" id="L77">        }</span>
+<span class="nc" id="L78">    }</span>
+
+    public void saveSettings() {
+<span class="nc" id="L81">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SETTINGS_FILE))) {</span>
+<span class="nc" id="L82">            writer.write(&quot;# Paramètres du jeu Crazy Roads\n&quot;);</span>
+<span class="nc" id="L83">            writer.write(&quot;musicVolume=&quot; + musicVolume + &quot;\n&quot;);</span>
+<span class="nc" id="L84">            writer.write(&quot;soundVolume=&quot; + soundVolume + &quot;\n&quot;);</span>
+<span class="nc" id="L85">            writer.write(&quot;screenWidth=&quot; + screenWidth + &quot;\n&quot;);</span>
+<span class="nc" id="L86">            writer.write(&quot;screenHeight=&quot; + screenHeight + &quot;\n&quot;);</span>
+<span class="nc" id="L87">            writer.write(&quot;leftKey=&quot; + leftKey + &quot;\n&quot;);</span>
+<span class="nc" id="L88">            writer.write(&quot;rightKey=&quot; + rightKey + &quot;\n&quot;);</span>
+<span class="nc" id="L89">            writer.write(&quot;pauseKey=&quot; + pauseKey + &quot;\n&quot;);</span>
+<span class="nc" id="L90">            writer.write(&quot;boostKey=&quot; + boostKey + &quot;\n&quot;);</span>
+
+<span class="nc" id="L92">        } catch (IOException e) {</span>
+<span class="nc" id="L93">        }</span>
+<span class="nc" id="L94">    }</span>
+
+    public double getMusicVolume() {
+<span class="fc" id="L97">        return musicVolume;</span>
+    }
+
+    public void setMusicVolume(double volume) {
+<span class="fc" id="L101">        this.musicVolume = Math.max(0.0, Math.min(1.0, volume));</span>
+<span class="fc" id="L102">    }</span>
+
+    public double getSoundVolume() {
+<span class="fc" id="L105">        return soundVolume;</span>
+    }
+
+    public void setSoundVolume(double volume) {
+<span class="fc" id="L109">        this.soundVolume = Math.max(0.0, Math.min(1.0, volume));</span>
+<span class="fc" id="L110">    }</span>
+
+    public double getScreenWidth() {
+<span class="fc" id="L113">        return screenWidth;</span>
+    }
+
+    public void setScreenWidth(double width) {
+<span class="fc" id="L117">        this.screenWidth = Math.max(800, width);</span>
+<span class="fc" id="L118">    }</span>
+
+    public double getScreenHeight() {
+<span class="fc" id="L121">        return screenHeight;</span>
+    }
+
+    public void setScreenHeight(double height) {
+<span class="fc" id="L125">        this.screenHeight = Math.max(600, height);</span>
+<span class="fc" id="L126">    }</span>
+
+    public KeyCode getLeftKey() {
+<span class="fc" id="L129">        return leftKey;</span>
+    }
+
+    public void setLeftKey(KeyCode key) {
+<span class="fc" id="L133">        this.leftKey = key;</span>
+<span class="fc" id="L134">    }</span>
+
+    public KeyCode getRightKey() {
+<span class="fc" id="L137">        return rightKey;</span>
+    }
+
+    public void setRightKey(KeyCode key) {
+<span class="fc" id="L141">        this.rightKey = key;</span>
+<span class="fc" id="L142">    }</span>
+
+    public KeyCode getPauseKey() {
+<span class="fc" id="L145">        return pauseKey;</span>
+    }
+
+    public void setPauseKey(KeyCode key) {
+<span class="fc" id="L149">        this.pauseKey = key;</span>
+<span class="fc" id="L150">    }</span>
+
+    public KeyCode getBoostKey() {
+<span class="nc" id="L153">        return boostKey;</span>
+    }
+
+    public void setBoostKey(KeyCode key) {
+<span class="nc" id="L157">        this.boostKey = key;</span>
+<span class="nc" id="L158">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

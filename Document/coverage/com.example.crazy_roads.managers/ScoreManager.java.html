@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScoreManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.managers</a> &gt; <span class="el_source">ScoreManager.java</span></div><h1>ScoreManager.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.managers;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+
+public class ScoreManager {
+    private static final String SCORES_FILE = &quot;scores.dat&quot;;
+    private static ScoreManager instance;
+<span class="fc" id="L11">    private final Map&lt;String, List&lt;Integer&gt;&gt; scoresByMode = new HashMap&lt;&gt;();</span>
+
+    public static final String MODE_INFINITE = &quot;COURSE_INFINIE&quot;;
+    public static final String MODE_TIME_ATTACK = &quot;CONTRE_LA_MONTRE&quot;;
+
+<span class="fc" id="L16">    private ScoreManager() {</span>
+<span class="fc" id="L17">        loadScores();</span>
+<span class="fc" id="L18">    }</span>
+
+    public static ScoreManager getInstance() {
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L22">            instance = new ScoreManager();</span>
+        }
+<span class="fc" id="L24">        return instance;</span>
+    }
+
+    public void loadScores() {
+<span class="fc" id="L28">        scoresByMode.put(MODE_INFINITE, new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L29">        scoresByMode.put(MODE_TIME_ATTACK, new ArrayList&lt;&gt;());</span>
+
+        try {
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">            if (!Files.exists(Paths.get(SCORES_FILE))) return;</span>
+
+<span class="fc" id="L34">            try (BufferedReader reader = new BufferedReader(new FileReader(SCORES_FILE))) {</span>
+                String line;
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                while ((line = reader.readLine()) != null) {</span>
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">                    if (line.isEmpty() || line.startsWith(&quot;#&quot;)) continue;</span>
+<span class="fc" id="L38">                    String[] parts = line.split(&quot;=&quot;, 2);</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">                    if (parts.length != 2) continue;</span>
+
+<span class="fc" id="L41">                    String mode = parts[0].trim();</span>
+<span class="fc" id="L42">                    int score = Integer.parseInt(parts[1].trim());</span>
+<span class="pc" id="L43">                    scoresByMode.computeIfAbsent(mode, k -&gt; new ArrayList&lt;&gt;()).add(score);</span>
+<span class="fc" id="L44">                }</span>
+            }
+<span class="nc" id="L46">        } catch (IOException | NumberFormatException e) {</span>
+<span class="fc" id="L47">        }</span>
+<span class="fc" id="L48">    }</span>
+
+    public void saveScore(String mode, int score) {
+<span class="fc" id="L51">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SCORES_FILE, true))) {</span>
+<span class="fc" id="L52">            writer.write(mode + &quot;=&quot; + score + &quot;\n&quot;); // append</span>
+<span class="nc" id="L53">        } catch (IOException e) {</span>
+<span class="fc" id="L54">        }</span>
+<span class="pc" id="L55">        scoresByMode.computeIfAbsent(mode, k -&gt; new ArrayList&lt;&gt;()).add(score);</span>
+<span class="fc" id="L56">    }</span>
+
+    public int getBestScore(String mode) {
+<span class="fc" id="L59">        List&lt;Integer&gt; scores = getTopScores(mode, 1);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        return scores.isEmpty() ? 0 : scores.get(0);</span>
+    }
+
+    public boolean updateBestScore(String gameMode, int newScore) {
+<span class="fc" id="L64">        int currentBest = getBestScore(gameMode);</span>
+<span class="fc" id="L65">        boolean isNewRecord = false;</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (MODE_INFINITE.equals(gameMode)) {</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">            if (newScore &gt; currentBest) {</span>
+<span class="fc" id="L69">                isNewRecord = true;</span>
+            }
+        } else {
+<span class="pc bpc" id="L72" title="1 of 4 branches missed.">            if (newScore &lt; currentBest || currentBest == 0) {</span>
+<span class="fc" id="L73">                isNewRecord = true;</span>
+            }
+        }
+        
+<span class="fc" id="L77">        saveScore(gameMode, newScore);</span>
+<span class="fc" id="L78">        return isNewRecord;</span>
+    }
+
+    public List&lt;Integer&gt; getTopScores(String mode, int limit) {
+<span class="fc" id="L82">        List&lt;Integer&gt; scores = new ArrayList&lt;&gt;(scoresByMode.getOrDefault(mode, new ArrayList&lt;&gt;()));</span>
+
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (MODE_INFINITE.equals(mode)) {</span>
+<span class="fc" id="L85">            scores.sort(Collections.reverseOrder());</span>
+        } else {
+<span class="fc" id="L87">            scores.sort(Integer::compareTo);</span>
+        }
+
+<span class="fc" id="L90">        return scores.subList(0, Math.min(limit, scores.size()));</span>
+    }
+
+    public void resetAllScores() {
+<span class="fc" id="L94">        scoresByMode.clear();</span>
+<span class="fc" id="L95">        scoresByMode.put(MODE_INFINITE, new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L96">        scoresByMode.put(MODE_TIME_ATTACK, new ArrayList&lt;&gt;());</span>
+
+<span class="fc" id="L98">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SCORES_FILE))) {</span>
+<span class="fc" id="L99">            writer.write(&quot;# Scores Crazy Roads\n&quot;);</span>
+<span class="nc" id="L100">        } catch (IOException e) {</span>
+<span class="fc" id="L101">        }</span>
+<span class="fc" id="L102">    }</span>
+
+    public void resetScore(String mode) {
+<span class="fc" id="L105">        scoresByMode.put(mode, new ArrayList&lt;&gt;());</span>
+
+<span class="fc" id="L107">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SCORES_FILE))) {</span>
+<span class="fc" id="L108">            writer.write(&quot;# Scores Crazy Roads\n&quot;);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">            for (Map.Entry&lt;String, List&lt;Integer&gt;&gt; entry : scoresByMode.entrySet()) {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">                for (int score : entry.getValue()) {</span>
+<span class="fc" id="L111">                    writer.write(entry.getKey() + &quot;=&quot; + score + &quot;\n&quot;);</span>
+<span class="fc" id="L112">                }</span>
+<span class="fc" id="L113">            }</span>
+<span class="nc" id="L114">        } catch (IOException e) {</span>
+<span class="fc" id="L115">        }</span>
+<span class="fc" id="L116">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

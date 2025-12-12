@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BestScoresMenu.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.gui</a> &gt; <span class="el_source">BestScoresMenu.java</span></div><h1>BestScoresMenu.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.gui;
+
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import com.example.crazy_roads.managers.ScoreManager;
+
+import java.util.List;
+
+public class BestScoresMenu {
+    private final Stage primaryStage;
+    private final Scene previousScene;
+    private final ScoreManager scoreManager;
+
+<span class="nc" id="L23">    public BestScoresMenu(Stage primaryStage, Scene previousScene) {</span>
+<span class="nc" id="L24">        this.primaryStage = primaryStage;</span>
+<span class="nc" id="L25">        this.previousScene = previousScene;</span>
+<span class="nc" id="L26">        this.scoreManager = ScoreManager.getInstance();</span>
+<span class="nc" id="L27">        showScoresMenu();</span>
+<span class="nc" id="L28">    }</span>
+
+    private void showScoresMenu() {
+<span class="nc" id="L31">        scoreManager.loadScores();</span>
+        
+<span class="nc" id="L33">        StackPane root = new StackPane();</span>
+<span class="nc" id="L34">        root.setStyle(&quot;-fx-background-color: #1a1a2e;&quot;);</span>
+
+<span class="nc" id="L36">        VBox mainBox = new VBox(40);</span>
+<span class="nc" id="L37">        mainBox.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L38">        mainBox.setStyle(&quot;-fx-padding: 50px;&quot;);</span>
+
+<span class="nc" id="L40">        Text titre = new Text(&quot;MEILLEURS SCORES&quot;);</span>
+<span class="nc" id="L41">        titre.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 60));</span>
+<span class="nc" id="L42">        titre.setFill(Color.web(&quot;#FFD700&quot;));</span>
+
+<span class="nc" id="L44">        VBox scoresBox = new VBox(30);</span>
+<span class="nc" id="L45">        scoresBox.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L46">        scoresBox.setStyle(</span>
+                &quot;-fx-background-color: rgba(0, 0, 0, 0.5);&quot; +
+                        &quot;-fx-padding: 40px;&quot; +
+                        &quot;-fx-background-radius: 15px;&quot; +
+                        &quot;-fx-border-color: #FFD700;&quot; +
+                        &quot;-fx-border-width: 3;&quot; +
+                        &quot;-fx-border-radius: 15px;&quot;
+        );
+<span class="nc" id="L54">        scoresBox.setMaxWidth(700);</span>
+
+<span class="nc" id="L56">        VBox infiniteScoreBox = createScoreDisplay(</span>
+                &quot;COURSE INFINIE&quot;,
+<span class="nc" id="L58">                scoreManager.getBestScore(ScoreManager.MODE_INFINITE),</span>
+                &quot;#00ff88&quot;,
+                &quot;🏁&quot;,
+                false,
+                &quot;points&quot;
+        );
+
+<span class="nc" id="L65">        javafx.scene.shape.Line separator = new javafx.scene.shape.Line();</span>
+<span class="nc" id="L66">        separator.setEndX(500);</span>
+<span class="nc" id="L67">        separator.setStroke(Color.web(&quot;#444466&quot;));</span>
+<span class="nc" id="L68">        separator.setStrokeWidth(2);</span>
+
+<span class="nc" id="L70">        VBox timeAttackScoreBox = createScoreDisplay(</span>
+                &quot;CONTRE LA MONTRE&quot;,
+<span class="nc" id="L72">                scoreManager.getBestScore(ScoreManager.MODE_TIME_ATTACK),</span>
+                &quot;#ffaa00&quot;,
+                &quot;⏱&quot;,
+                true,
+                &quot;secondes&quot;);
+
+<span class="nc" id="L78">        scoresBox.getChildren().addAll(infiniteScoreBox, separator, timeAttackScoreBox);</span>
+
+<span class="nc" id="L80">        HBox buttonBox = new HBox(20);</span>
+<span class="nc" id="L81">        buttonBox.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L83">        Button btnClassement = createButton(&quot;CLASSEMENT&quot;, &quot;#2196F3&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L84">        btnClassement.setOnAction(e -&gt; showRankingMenu());</span>
+
+<span class="nc" id="L86">        Button btnRetour = createButton(&quot;RETOUR&quot;, &quot;#4CAF50&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L87">        btnRetour.setOnAction(e -&gt; {</span>
+<span class="nc" id="L88">            primaryStage.setScene(previousScene);</span>
+<span class="nc" id="L89">        });</span>
+
+<span class="nc" id="L91">        Button btnReset = createButton(&quot;RÉINITIALISER&quot;, &quot;#F44336&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L92">        btnReset.setOnAction(e -&gt; {</span>
+<span class="nc" id="L93">            scoreManager.resetAllScores();</span>
+<span class="nc" id="L94">            showScoresMenu();</span>
+<span class="nc" id="L95">        });</span>
+
+<span class="nc" id="L97">        buttonBox.getChildren().addAll(btnRetour, btnReset, btnClassement);</span>
+
+<span class="nc" id="L99">        mainBox.getChildren().addAll(titre, scoresBox, buttonBox);</span>
+<span class="nc" id="L100">        root.getChildren().add(mainBox);</span>
+
+<span class="nc" id="L102">        Scene scoresScene = new Scene(root, 1200, 800);</span>
+
+<span class="nc" id="L104">        scoresScene.setOnKeyPressed(event -&gt; {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {</span>
+<span class="nc" id="L106">                primaryStage.setScene(previousScene);</span>
+            }
+<span class="nc" id="L108">        });</span>
+
+<span class="nc" id="L110">        primaryStage.setScene(scoresScene);</span>
+<span class="nc" id="L111">    }</span>
+
+    private VBox createScoreDisplay(String modeName, int score, String color, String emoji, boolean isTimeAttack, String str) {
+<span class="nc" id="L114">        VBox box = new VBox(15);</span>
+<span class="nc" id="L115">        box.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L117">        HBox headerBox = new HBox(15);</span>
+<span class="nc" id="L118">        headerBox.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L120">        Text emojiText = new Text(emoji);</span>
+<span class="nc" id="L121">        emojiText.setFont(Font.font(40));</span>
+<span class="nc" id="L122">        emojiText.setFill(Color.web(color));</span>
+
+<span class="nc" id="L124">        Text modeText = new Text(modeName);</span>
+<span class="nc" id="L125">        modeText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 28));</span>
+<span class="nc" id="L126">        modeText.setFill(Color.web(&quot;#FFFFFF&quot;));</span>
+
+<span class="nc" id="L128">        headerBox.getChildren().addAll(emojiText, modeText);</span>
+
+        Text scoreText;
+<span class="nc bnc" id="L131" title="All 4 branches missed.">        if (isTimeAttack &amp;&amp; score &gt; 0) {</span>
+<span class="nc" id="L132">            int minutes = score / 60;</span>
+<span class="nc" id="L133">            int seconds = score % 60;</span>
+<span class="nc" id="L134">            scoreText = new Text(minutes + &quot;.&quot; + String.format(&quot;%02d&quot;, seconds));</span>
+<span class="nc" id="L135">            str = &quot;minutes&quot;;</span>
+<span class="nc" id="L136">        } else {</span>
+<span class="nc" id="L137">            scoreText = new Text(String.format(&quot;%,d&quot;, score));</span>
+        }
+<span class="nc" id="L139">        scoreText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 50));</span>
+<span class="nc" id="L140">        scoreText.setFill(Color.web(color));</span>
+
+<span class="nc" id="L142">        Text strText = new Text(str);</span>
+<span class="nc" id="L143">        strText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 20));</span>
+<span class="nc" id="L144">        strText.setFill(Color.web(&quot;#FFFFFF&quot;));</span>
+
+<span class="nc" id="L146">        box.getChildren().addAll(headerBox, scoreText, strText);</span>
+<span class="nc" id="L147">        return box;</span>
+    }
+
+    private Button createButton(String texte, String couleurBg, String couleurTexte) {
+<span class="nc" id="L151">        Button btn = new Button(texte);</span>
+<span class="nc" id="L152">        btn.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 20));</span>
+<span class="nc" id="L153">        btn.setPrefWidth(250);</span>
+<span class="nc" id="L154">        btn.setPrefHeight(50);</span>
+<span class="nc" id="L155">        btn.setTextFill(Color.web(couleurTexte));</span>
+<span class="nc" id="L156">        btn.setStyle(</span>
+                &quot;-fx-background-color: &quot; + couleurBg + &quot;;&quot; +
+                        &quot;-fx-border-color: #FFFFFF;&quot; +
+                        &quot;-fx-border-width: 2px;&quot; +
+                        &quot;-fx-border-radius: 10px;&quot; +
+                        &quot;-fx-background-radius: 10px;&quot;
+        );
+
+<span class="nc" id="L164">        btn.setOnMouseEntered(e -&gt; {</span>
+<span class="nc" id="L165">            btn.setScaleX(1.05);</span>
+<span class="nc" id="L166">            btn.setScaleY(1.05);</span>
+<span class="nc" id="L167">        });</span>
+
+<span class="nc" id="L169">        btn.setOnMouseExited(e -&gt; {</span>
+<span class="nc" id="L170">            btn.setScaleX(1.0);</span>
+<span class="nc" id="L171">            btn.setScaleY(1.0);</span>
+<span class="nc" id="L172">        });</span>
+
+<span class="nc" id="L174">        return btn;</span>
+    }
+
+    private void showRankingMenu() {
+<span class="nc" id="L178">        scoreManager.loadScores();</span>
+        
+<span class="nc" id="L180">        VBox rankingBox = new VBox(20);</span>
+<span class="nc" id="L181">        rankingBox.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L182">        rankingBox.setStyle(&quot;-fx-padding: 40px;&quot;);</span>
+
+<span class="nc" id="L184">        Text titre = new Text(&quot;🏆 CLASSEMENT TOP 5&quot;);</span>
+<span class="nc" id="L185">        titre.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 40));</span>
+<span class="nc" id="L186">        titre.setFill(Color.web(&quot;#FFD700&quot;));</span>
+
+<span class="nc" id="L188">        List&lt;Integer&gt; topInfinite = scoreManager.getTopScores(ScoreManager.MODE_INFINITE, 5);</span>
+<span class="nc" id="L189">        VBox infiniteRanking = createScoreList(&quot;COURSE INFINIE&quot;, topInfinite, &quot;#00ff88&quot;, &quot;🏁&quot;, false);</span>
+
+<span class="nc" id="L191">        List&lt;Integer&gt; topTimeAttack = scoreManager.getTopScores(ScoreManager.MODE_TIME_ATTACK, 5);</span>
+<span class="nc" id="L192">        VBox timeAttackRanking = createScoreList(&quot;CONTRE LA MONTRE&quot;, topTimeAttack, &quot;#ffaa00&quot;, &quot;⏱&quot;, true);</span>
+
+<span class="nc" id="L194">        Button btnRetour = createButton(&quot;RETOUR&quot;, &quot;#4CAF50&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L195">        btnRetour.setOnAction(e -&gt; primaryStage.setScene(previousScene));</span>
+
+<span class="nc" id="L197">        rankingBox.getChildren().addAll(titre, infiniteRanking, timeAttackRanking, btnRetour);</span>
+
+<span class="nc" id="L199">        Scene rankingScene = new Scene(rankingBox, 1200, 800);</span>
+<span class="nc" id="L200">        rankingBox.setStyle(&quot;-fx-background-color: #1a1a2e;&quot;);</span>
+<span class="nc" id="L201">        primaryStage.setScene(rankingScene);</span>
+<span class="nc" id="L202">    }</span>
+
+    private VBox createScoreList(String modeName, List&lt;Integer&gt; scores, String color, String emoji, boolean isTimeAttack) {
+<span class="nc" id="L205">        VBox box = new VBox(10);</span>
+<span class="nc" id="L206">        box.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L207">        box.setStyle(</span>
+                &quot;-fx-background-color: rgba(0, 0, 0, 0.5);&quot; +
+                        &quot;-fx-padding: 20px;&quot; +
+                        &quot;-fx-background-radius: 15px;&quot; +
+                        &quot;-fx-border-color: &quot; + color + &quot;;&quot; +
+                        &quot;-fx-border-width: 2;&quot; +
+                        &quot;-fx-border-radius: 15px;&quot;
+        );
+<span class="nc" id="L215">        box.setMaxWidth(600);</span>
+
+<span class="nc" id="L217">        HBox headerBox = new HBox(15);</span>
+<span class="nc" id="L218">        headerBox.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L220">        Text emojiText = new Text(emoji);</span>
+<span class="nc" id="L221">        emojiText.setFont(Font.font(40));</span>
+<span class="nc" id="L222">        emojiText.setFill(Color.web(color));</span>
+
+<span class="nc" id="L224">        Text modeText = new Text(modeName + &quot; - Top 5&quot;);</span>
+<span class="nc" id="L225">        modeText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 24));</span>
+<span class="nc" id="L226">        modeText.setFill(Color.web(&quot;#FFFFFF&quot;));</span>
+
+<span class="nc" id="L228">        headerBox.getChildren().addAll(emojiText, modeText);</span>
+<span class="nc" id="L229">        box.getChildren().add(headerBox);</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (scores.isEmpty()) {</span>
+<span class="nc" id="L232">            Text noScoreText = new Text(&quot;Aucun score enregistré&quot;);</span>
+<span class="nc" id="L233">            noScoreText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 18));</span>
+<span class="nc" id="L234">            noScoreText.setFill(Color.web(&quot;#888888&quot;));</span>
+<span class="nc" id="L235">            box.getChildren().add(noScoreText);</span>
+<span class="nc" id="L236">        } else {</span>
+<span class="nc" id="L237">            int rank = 1;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            for (int score : scores) {</span>
+                String text;
+<span class="nc bnc" id="L240" title="All 2 branches missed.">                if (isTimeAttack) {</span>
+<span class="nc" id="L241">                    int minutes = score / 60;</span>
+<span class="nc" id="L242">                    int seconds = score % 60;</span>
+<span class="nc" id="L243">                    text = rank + &quot;. &quot; + minutes + &quot;.&quot; + String.format(&quot;%02d&quot;, seconds) + &quot; minutes&quot;;</span>
+<span class="nc" id="L244">                } else {</span>
+<span class="nc" id="L245">                    text = rank + &quot;. &quot; + String.format(&quot;%,d&quot;, score) + &quot; points&quot;;</span>
+                }
+
+<span class="nc" id="L248">                Text scoreText = new Text(text);</span>
+<span class="nc" id="L249">                scoreText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 20));</span>
+<span class="nc" id="L250">                scoreText.setFill(Color.web(color));</span>
+<span class="nc" id="L251">                box.getChildren().add(scoreText);</span>
+<span class="nc" id="L252">                rank++;</span>
+<span class="nc" id="L253">            }</span>
+        }
+
+<span class="nc" id="L256">        return box;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HUD.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.gui</a> &gt; <span class="el_source">HUD.java</span></div><h1>HUD.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.gui;
+
+import javafx.animation.AnimationTimer;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import com.example.crazy_roads.managers.ScoreManager;
+
+public class HUD {
+    private HBox hudRoot;
+    private Text scoreLabel;
+    private Text scoreValue;
+    private Text bestScoreLabel;
+    private Text bestScoreValue;
+    private Text livesLabel;
+    private Text livesValue;
+    private Text timerLabel;
+    private Text timerValue;
+    private Text boostLabel;
+    private Text boostValue;
+    private Text modeLabel;
+    private VBox boostBox;
+    private Text separator2;
+    private VBox scoreBox;
+
+<span class="fc" id="L32">    private int currentScore = 0;</span>
+<span class="fc" id="L33">    private int bestScore = 0;</span>
+<span class="fc" id="L34">    private int lives = 3;</span>
+<span class="fc" id="L35">    private long startTimeMs = 0;</span>
+<span class="fc" id="L36">    private boolean boostActive = false;</span>
+<span class="fc" id="L37">    private String gameMode = &quot;COURSE INFINIE&quot;;</span>
+<span class="fc" id="L38">    private String currentGameModeKey = ScoreManager.MODE_INFINITE;</span>
+    private AnimationTimer updateTimer;
+
+<span class="fc" id="L41">    private boolean isCountdown = false;</span>
+<span class="fc" id="L42">    private long totalTimeMs = 60000;</span>
+<span class="fc" id="L43">    private boolean timeExpired = false;</span>
+
+    private ScoreManager scoreManager;
+
+<span class="fc" id="L47">    public HUD() {</span>
+<span class="fc" id="L48">        scoreManager = ScoreManager.getInstance();</span>
+<span class="fc" id="L49">        initializeHUD();</span>
+<span class="fc" id="L50">        startUpdateTimer();</span>
+<span class="fc" id="L51">        loadBestScore();</span>
+<span class="fc" id="L52">    }</span>
+
+    private void initializeHUD() {
+<span class="fc" id="L55">        hudRoot = new HBox(30);</span>
+<span class="fc" id="L56">        hudRoot.setStyle(</span>
+                &quot;-fx-background-color: rgba(0, 0, 0, 0.7);&quot; +
+                        &quot;-fx-padding: 15px 20px;&quot; +
+                        &quot;-fx-background-radius: 10px;&quot; +
+                        &quot;-fx-border-color: #FFEB3B;&quot; +
+                        &quot;-fx-border-width: 2;&quot; +
+                        &quot;-fx-border-radius: 10px;&quot;
+        );
+<span class="fc" id="L64">        hudRoot.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="fc" id="L66">        scoreBox = createHUDSection(&quot;SCORE&quot;, String.valueOf(currentScore), Color.web(&quot;#FFEB3B&quot;));</span>
+<span class="fc" id="L67">        scoreLabel = (Text) ((VBox) scoreBox).getChildren().get(0);</span>
+<span class="fc" id="L68">        scoreValue = (Text) ((VBox) scoreBox).getChildren().get(1);</span>
+
+<span class="fc" id="L70">        VBox bestScoreBox = createHUDSection(&quot;MEILLEUR&quot;, String.valueOf(bestScore), Color.web(&quot;#FFC107&quot;));</span>
+<span class="fc" id="L71">        bestScoreLabel = (Text) ((VBox) bestScoreBox).getChildren().get(0);</span>
+<span class="fc" id="L72">        bestScoreValue = (Text) ((VBox) bestScoreBox).getChildren().get(1);</span>
+
+<span class="fc" id="L74">        VBox livesBox = createHUDSection(&quot;VIES&quot;, String.valueOf(lives), Color.web(&quot;#FF5252&quot;));</span>
+<span class="fc" id="L75">        livesLabel = (Text) ((VBox) livesBox).getChildren().get(0);</span>
+<span class="fc" id="L76">        livesValue = (Text) ((VBox) livesBox).getChildren().get(1);</span>
+
+<span class="fc" id="L78">        Text separator1 = new Text(&quot; | &quot;);</span>
+<span class="fc" id="L79">        separator1.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, 20));</span>
+<span class="fc" id="L80">        separator1.setFill(Color.web(&quot;#FFFFFF&quot;));</span>
+
+<span class="fc" id="L82">        VBox timerBox = createHUDSection(&quot;TEMPS&quot;, &quot;00:00&quot;, Color.web(&quot;#4DD0E1&quot;));</span>
+<span class="fc" id="L83">        timerLabel = (Text) ((VBox) timerBox).getChildren().get(0);</span>
+<span class="fc" id="L84">        timerValue = (Text) ((VBox) timerBox).getChildren().get(1);</span>
+
+<span class="fc" id="L86">        boostBox = createHUDSection(&quot;BOOST&quot;, &quot;INACTIF&quot;, Color.web(&quot;#AB47BC&quot;));</span>
+<span class="fc" id="L87">        boostLabel = (Text) ((VBox) boostBox).getChildren().get(0);</span>
+<span class="fc" id="L88">        boostValue = (Text) ((VBox) boostBox).getChildren().get(1);</span>
+
+<span class="fc" id="L90">        separator2 = new Text(&quot; | &quot;);</span>
+<span class="fc" id="L91">        separator2.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, 20));</span>
+<span class="fc" id="L92">        separator2.setFill(Color.web(&quot;#FFFFFF&quot;));</span>
+
+<span class="fc" id="L94">        modeLabel = new Text(gameMode);</span>
+<span class="fc" id="L95">        modeLabel.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, 18));</span>
+<span class="fc" id="L96">        modeLabel.setFill(Color.web(&quot;#4CAF50&quot;));</span>
+
+<span class="fc" id="L98">        VBox modeBox = new VBox(5);</span>
+<span class="fc" id="L99">        modeBox.setAlignment(Pos.CENTER);</span>
+<span class="fc" id="L100">        modeBox.getChildren().add(modeLabel);</span>
+<span class="fc" id="L101">        Region spacer = new Region();</span>
+<span class="fc" id="L102">        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);</span>
+
+<span class="fc" id="L104">        hudRoot.getChildren().addAll(</span>
+                scoreBox, bestScoreBox, livesBox,
+                separator1, timerBox, boostBox,
+                separator2, spacer, modeBox
+        );
+
+<span class="fc" id="L110">        boostBox.setVisible(false);</span>
+<span class="fc" id="L111">        boostBox.setManaged(false);</span>
+<span class="fc" id="L112">        separator2.setVisible(false);</span>
+<span class="fc" id="L113">        separator2.setManaged(false);</span>
+<span class="fc" id="L114">    }</span>
+
+    private VBox createHUDSection(String label, String value, Color color) {
+<span class="fc" id="L117">        VBox section = new VBox(3);</span>
+<span class="fc" id="L118">        section.setAlignment(Pos.CENTER);</span>
+
+<span class="fc" id="L120">        Text labelText = new Text(label);</span>
+<span class="fc" id="L121">        labelText.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, 12));</span>
+<span class="fc" id="L122">        labelText.setFill(Color.web(&quot;#FFFFFF&quot;));</span>
+<span class="fc" id="L123">        labelText.setTextAlignment(TextAlignment.CENTER);</span>
+
+<span class="fc" id="L125">        Text valueText = new Text(value);</span>
+<span class="fc" id="L126">        valueText.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, 22));</span>
+<span class="fc" id="L127">        valueText.setFill(color);</span>
+<span class="fc" id="L128">        valueText.setTextAlignment(TextAlignment.CENTER);</span>
+
+<span class="fc" id="L130">        section.getChildren().addAll(labelText, valueText);</span>
+<span class="fc" id="L131">        return section;</span>
+    }
+
+    private void startUpdateTimer() {
+<span class="fc" id="L135">        updateTimer = new AnimationTimer() {</span>
+            @Override
+            public void handle(long now) {
+<span class="nc" id="L138">                updateDisplay();</span>
+<span class="nc" id="L139">            }</span>
+        };
+<span class="fc" id="L141">        updateTimer.start();</span>
+<span class="fc" id="L142">        startTimeMs = System.currentTimeMillis();</span>
+<span class="fc" id="L143">    }</span>
+
+    private void updateDisplay() {
+<span class="nc" id="L146">        scoreValue.setText(String.valueOf(currentScore));</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (currentScore &gt; bestScore) {</span>
+<span class="nc" id="L148">            bestScore = currentScore;</span>
+<span class="nc" id="L149">            bestScoreValue.setText(String.valueOf(bestScore));</span>
+<span class="nc" id="L150">            bestScoreValue.setFill(Color.web(&quot;#FFD700&quot;));</span>
+        } else {
+<span class="nc" id="L152">            bestScoreValue.setFill(Color.web(&quot;#FFC107&quot;));</span>
+        }
+
+<span class="nc" id="L155">        livesValue.setText(String.valueOf(lives));</span>
+
+<span class="nc" id="L157">        updateTimer();</span>
+<span class="nc" id="L158">        updateBoostDisplay();</span>
+<span class="nc" id="L159">        updateLivesColor();</span>
+<span class="nc" id="L160">    }</span>
+
+    private void updateTimer() {
+<span class="nc" id="L163">        long elapsedMs = System.currentTimeMillis() - startTimeMs;</span>
+<span class="nc" id="L164">        long seconds = elapsedMs / 1000;</span>
+<span class="nc" id="L165">        long minutes = seconds / 60;</span>
+<span class="nc" id="L166">        long displaySeconds = seconds % 60;</span>
+<span class="nc" id="L167">        timerValue.setFill(Color.web(&quot;#4DD0E1&quot;));</span>
+<span class="nc" id="L168">        timerValue.setText(String.format(&quot;%02d:%02d&quot;, minutes, displaySeconds));</span>
+<span class="nc" id="L169">    }</span>
+
+    private void updateBoostDisplay() {
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (boostActive) {</span>
+<span class="nc" id="L173">            boostValue.setText(&quot;ACTIF&quot;);</span>
+<span class="nc" id="L174">            boostValue.setFill(Color.web(&quot;#FFD700&quot;));</span>
+        } else {
+<span class="nc" id="L176">            boostValue.setText(&quot;INACTIF&quot;);</span>
+<span class="nc" id="L177">            boostValue.setFill(Color.web(&quot;#AB47BC&quot;));</span>
+        }
+<span class="nc" id="L179">    }</span>
+
+    private void updateLivesColor() {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (lives &gt;= 3) {</span>
+<span class="nc" id="L183">            livesValue.setFill(Color.web(&quot;#4CAF50&quot;));</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        } else if (lives == 2) {</span>
+<span class="nc" id="L185">            livesValue.setFill(Color.web(&quot;#FFC107&quot;));</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        } else if (lives == 1) {</span>
+<span class="nc" id="L187">            livesValue.setFill(Color.web(&quot;#FF5252&quot;));</span>
+        } else {
+<span class="nc" id="L189">            livesValue.setFill(Color.web(&quot;#F44336&quot;));</span>
+        }
+<span class="nc" id="L191">    }</span>
+
+    public void setCountdownMode() {
+<span class="fc" id="L194">        this.isCountdown = true;</span>
+<span class="fc" id="L195">        this.totalTimeMs = 1000L;</span>
+<span class="fc" id="L196">        this.gameMode = &quot;CONTRE LA MONTRE&quot;;</span>
+<span class="fc" id="L197">        this.currentGameModeKey = ScoreManager.MODE_TIME_ATTACK;</span>
+
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (modeLabel != null) {</span>
+<span class="fc" id="L200">            modeLabel.setText(gameMode);</span>
+        }
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        if (boostBox != null) {</span>
+<span class="fc" id="L203">            boostBox.setVisible(true);</span>
+<span class="fc" id="L204">            boostBox.setManaged(true);</span>
+<span class="fc" id="L205">            separator2.setVisible(true);</span>
+<span class="fc" id="L206">            separator2.setManaged(true);</span>
+        }
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        if (scoreBox != null) {</span>
+<span class="fc" id="L209">            scoreBox.setVisible(false);</span>
+<span class="fc" id="L210">            scoreBox.setManaged(false);</span>
+<span class="fc" id="L211">            separator2.setVisible(false);</span>
+<span class="fc" id="L212">            separator2.setManaged(false);</span>
+        }
+<span class="fc" id="L214">        currentScore = 0;</span>
+<span class="fc" id="L215">        loadBestScore();</span>
+<span class="fc" id="L216">        resetTimer();</span>
+<span class="fc" id="L217">    }</span>
+
+    public void setInfiniteMode() {
+<span class="fc" id="L220">        this.isCountdown = false;</span>
+<span class="fc" id="L221">        this.gameMode = &quot;COURSE INFINIE&quot;;</span>
+<span class="fc" id="L222">        this.currentGameModeKey = ScoreManager.MODE_INFINITE;</span>
+
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (modeLabel != null) {</span>
+<span class="fc" id="L225">            modeLabel.setText(gameMode);</span>
+        }
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        if (boostBox != null) {</span>
+<span class="fc" id="L228">            boostBox.setVisible(false);</span>
+<span class="fc" id="L229">            boostBox.setManaged(false);</span>
+<span class="fc" id="L230">            separator2.setVisible(false);</span>
+<span class="fc" id="L231">            separator2.setManaged(false);</span>
+        }
+<span class="fc" id="L233">        currentScore = 0;</span>
+<span class="fc" id="L234">        loadBestScore();</span>
+<span class="fc" id="L235">        resetTimer();</span>
+<span class="fc" id="L236">    }</span>
+
+    public void setTimeAttackMode() {
+<span class="fc" id="L239">        this.isCountdown = false;</span>
+<span class="fc" id="L240">        this.gameMode = &quot;CONTRE LA MONTRE&quot;;</span>
+<span class="fc" id="L241">        this.currentGameModeKey = ScoreManager.MODE_TIME_ATTACK;</span>
+
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (modeLabel != null) {</span>
+<span class="fc" id="L244">            modeLabel.setText(gameMode);</span>
+        }
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if (boostBox != null) {</span>
+<span class="fc" id="L247">            boostBox.setVisible(true);</span>
+<span class="fc" id="L248">            boostBox.setManaged(true);</span>
+<span class="fc" id="L249">            separator2.setVisible(true);</span>
+<span class="fc" id="L250">            separator2.setManaged(true);</span>
+        }
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (scoreBox != null) {</span>
+<span class="fc" id="L253">            scoreBox.setVisible(false);</span>
+<span class="fc" id="L254">            scoreBox.setManaged(false);</span>
+        }
+<span class="fc" id="L256">        currentScore = 0;</span>
+<span class="fc" id="L257">        loadBestScore();</span>
+<span class="fc" id="L258">        resetTimer();</span>
+<span class="fc" id="L259">    }</span>
+
+    public void setTime(long seconds) {
+<span class="fc" id="L262">        long minutes = seconds / 60;</span>
+<span class="fc" id="L263">        long displaySeconds = seconds % 60;</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">        if (timerValue != null) {</span>
+<span class="fc" id="L265">            timerValue.setText(String.format(&quot;%02d:%02d&quot;, minutes, displaySeconds));</span>
+        }
+<span class="fc" id="L267">    }</span>
+
+    private void loadBestScore() {
+<span class="fc" id="L270">        bestScore = scoreManager.getBestScore(currentGameModeKey);</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">        if (bestScoreValue != null) {</span>
+<span class="fc" id="L272">            bestScoreValue.setText(String.valueOf(bestScore));</span>
+        }
+<span class="fc" id="L274">    }</span>
+
+    public void addScore(int points) {
+<span class="fc" id="L277">        currentScore += points;</span>
+<span class="fc" id="L278">    }</span>
+
+    public boolean saveScoreIfBest() {
+<span class="nc" id="L281">        int scoreToSave = currentScore;</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        if (currentGameModeKey.equals(ScoreManager.MODE_TIME_ATTACK)) {</span>
+<span class="nc" id="L283">            scoreToSave = (int) getElapsedTimeSeconds();</span>
+        }
+
+<span class="nc" id="L286">        return scoreManager.updateBestScore(currentGameModeKey, scoreToSave);</span>
+    }
+
+    public boolean isNewRecord() {
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">        if (currentGameModeKey.equals(ScoreManager.MODE_TIME_ATTACK)) {</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">            if (bestScore == 0) return false;</span>
+<span class="nc" id="L292">            int currentTime = (int) getElapsedTimeSeconds();</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">            return currentTime &lt; bestScore;</span>
+        } else {
+<span class="fc bfc" id="L295" title="All 2 branches covered.">            return currentScore &gt; bestScore;</span>
+        }
+    }
+
+    public String getCurrentGameModeKey() {
+<span class="fc" id="L300">        return currentGameModeKey;</span>
+    }
+
+    public HBox getHUDRoot() {
+<span class="fc" id="L304">        return hudRoot;</span>
+    }
+
+    public void setScore(int score) {
+<span class="fc" id="L308">        this.currentScore = score;</span>
+<span class="fc" id="L309">    }</span>
+
+    public void setBestScore(int bestScore) {
+<span class="fc" id="L312">        this.bestScore = bestScore;</span>
+<span class="fc" id="L313">    }</span>
+
+    public void setLives(int lives) {
+<span class="fc" id="L316">        this.lives = lives;</span>
+<span class="fc" id="L317">    }</span>
+
+    public void setBoostActive(boolean active) {
+<span class="fc" id="L320">        this.boostActive = active;</span>
+<span class="fc" id="L321">    }</span>
+
+    public void setGameMode(String mode) {
+<span class="nc" id="L324">        this.gameMode = mode;</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">        if (modeLabel != null) {</span>
+<span class="nc" id="L326">            modeLabel.setText(mode);</span>
+        }
+<span class="nc" id="L328">    }</span>
+
+    public void resetTimer() {
+<span class="fc" id="L331">        startTimeMs = System.currentTimeMillis();</span>
+<span class="fc" id="L332">        timeExpired = false;</span>
+<span class="fc" id="L333">    }</span>
+
+    public boolean isTimeExpired() {
+<span class="nc" id="L336">        return timeExpired;</span>
+    }
+
+    public long getRemainingTimeSeconds() {
+<span class="nc bnc" id="L340" title="All 2 branches missed.">        if (!isCountdown) return -1;</span>
+<span class="nc" id="L341">        long elapsedMs = System.currentTimeMillis() - startTimeMs;</span>
+<span class="nc" id="L342">        long remainingMs = totalTimeMs - elapsedMs;</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        if (remainingMs &lt;= 0) return 0;</span>
+<span class="nc" id="L344">        return remainingMs / 1000;</span>
+    }
+
+    public long getElapsedTimeSeconds() {
+<span class="fc" id="L348">        long elapsedMs = System.currentTimeMillis() - startTimeMs;</span>
+<span class="fc" id="L349">        return elapsedMs / 1000;</span>
+    }
+
+    public int getCurrentScore() {
+<span class="fc" id="L353">        return currentScore;</span>
+    }
+
+    public int getBestScore() {
+<span class="fc" id="L357">        return bestScore;</span>
+    }
+
+    public int getLives() {
+<span class="fc" id="L361">        return lives;</span>
+    }
+
+    public boolean isBoostActive() {
+<span class="fc" id="L365">        return boostActive;</span>
+    }
+
+    public void stop() {
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">        if (updateTimer != null) {</span>
+<span class="fc" id="L370">            updateTimer.stop();</span>
+        }
+<span class="fc" id="L372">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

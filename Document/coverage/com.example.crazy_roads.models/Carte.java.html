@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Carte.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.models</a> &gt; <span class="el_source">Carte.java</span></div><h1>Carte.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.models;
+
+import com.example.crazy_roads.managers.RessourceLoader;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Carte {
+
+    private List&lt;Frame&gt; frames;
+<span class="fc" id="L14">    private double vitesseDefilement = 16.0;</span>
+<span class="fc" id="L15">    private boolean useImages = false;</span>
+
+    private Image subwayImage;
+    private Image finishLineImage;
+<span class="fc" id="L19">    private boolean isMarioKartMode = false;</span>
+<span class="fc" id="L20">    private int totalFrames = 0;</span>
+<span class="fc" id="L21">    private int framesScrolled = 0;</span>
+
+    private static final double FRAME_HEIGHT = 600;
+
+<span class="fc" id="L25">    public Carte(int i) {</span>
+<span class="fc" id="L26">        frames = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L27">        chargerImages();</span>
+<span class="fc" id="L28">        initialiserFrames();</span>
+<span class="fc" id="L29">    }</span>
+
+<span class="fc" id="L31">    public Carte(boolean marioKartMode) {</span>
+<span class="fc" id="L32">        this.isMarioKartMode = marioKartMode;</span>
+<span class="fc" id="L33">        this.totalFrames = 100;</span>
+<span class="fc" id="L34">        frames = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L35">        chargerImages();</span>
+<span class="fc" id="L36">        initialiserFramesMarioKart();</span>
+<span class="fc" id="L37">    }</span>
+
+    private void chargerImages() {
+<span class="fc" id="L40">        String imagePath = &quot;/images/Carte/Frame1.png&quot;;</span>
+<span class="fc" id="L41">        subwayImage = RessourceLoader.loadImage(imagePath);</span>
+<span class="fc" id="L42">        useImages = RessourceLoader.isImageValid(subwayImage);</span>
+        
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (isMarioKartMode) {</span>
+<span class="fc" id="L45">            String finishPath = &quot;/images/Carte/Finish line.png&quot;;</span>
+<span class="fc" id="L46">            finishLineImage = RessourceLoader.loadImage(finishPath);</span>
+        }
+<span class="fc" id="L48">    }</span>
+
+    private void initialiserFrames() {
+<span class="fc" id="L51">        frames.clear();</span>
+
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (useImages) {</span>
+<span class="fc" id="L54">            frames.add(new Frame(subwayImage, 0, FRAME_HEIGHT));</span>
+<span class="fc" id="L55">            frames.add(new Frame(subwayImage, -FRAME_HEIGHT, FRAME_HEIGHT));</span>
+<span class="fc" id="L56">            frames.add(new Frame(subwayImage, -FRAME_HEIGHT*2, FRAME_HEIGHT));</span>
+<span class="fc" id="L57">            frames.add(new Frame(subwayImage, -FRAME_HEIGHT*3, FRAME_HEIGHT));</span>
+<span class="fc" id="L58">            frames.add(new Frame(subwayImage, -FRAME_HEIGHT*4, FRAME_HEIGHT));</span>
+<span class="fc" id="L59">            frames.add(new Frame(subwayImage, -FRAME_HEIGHT*5, FRAME_HEIGHT));</span>
+<span class="fc" id="L60">            frames.add(new Frame(subwayImage, -FRAME_HEIGHT*6, FRAME_HEIGHT));</span>
+
+
+        } else {
+<span class="nc" id="L64">            frames.add(new Frame(null, 0, FRAME_HEIGHT));</span>
+<span class="nc" id="L65">            frames.add(new Frame(null, -FRAME_HEIGHT, FRAME_HEIGHT));</span>
+        }
+<span class="fc" id="L67">    }</span>
+
+    private void initialiserFramesMarioKart() {
+<span class="fc" id="L70">        frames.clear();</span>
+
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (useImages) {</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            for (int i = 0; i &lt; 99; i++) {</span>
+<span class="fc" id="L74">                frames.add(new Frame(subwayImage, -FRAME_HEIGHT * i, FRAME_HEIGHT));</span>
+            }
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (RessourceLoader.isImageValid(finishLineImage)) {</span>
+<span class="fc" id="L77">                frames.add(new Frame(finishLineImage, -FRAME_HEIGHT * 99, FRAME_HEIGHT));</span>
+            } else {
+<span class="nc" id="L79">                frames.add(new Frame(subwayImage, -FRAME_HEIGHT * 99, FRAME_HEIGHT));</span>
+            }
+        } else {
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            for (int i = 0; i &lt; 100; i++) {</span>
+<span class="nc" id="L83">                frames.add(new Frame(null, -FRAME_HEIGHT * i, FRAME_HEIGHT));</span>
+            }
+        }
+        
+<span class="fc" id="L87">        framesScrolled = 0;</span>
+<span class="fc" id="L88">    }</span>
+
+    public void update() {
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        if (frames.isEmpty()) return;</span>
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        for (Frame frame : frames) {</span>
+<span class="fc" id="L94">            frame.move(vitesseDefilement);</span>
+<span class="fc" id="L95">        }</span>
+
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (isMarioKartMode) {</span>
+<span class="pc bpc" id="L98" title="1 of 4 branches missed.">            while (!frames.isEmpty() &amp;&amp; frames.get(0).isOffScreen()) {</span>
+<span class="fc" id="L99">                frames.remove(0);</span>
+<span class="fc" id="L100">                framesScrolled++;</span>
+            }
+        } else {
+<span class="pc bpc" id="L103" title="2 of 4 branches missed.">            while (!frames.isEmpty() &amp;&amp; frames.get(0).isOffScreen()) {</span>
+<span class="nc" id="L104">                frames.remove(0);</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">                double lastY = frames.isEmpty() ? 0 : frames.get(frames.size() - 1).getPositionY();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                if (useImages) {</span>
+<span class="nc" id="L108">                    frames.add(new Frame(subwayImage, lastY - FRAME_HEIGHT, FRAME_HEIGHT));</span>
+                } else {
+<span class="nc" id="L110">                    frames.add(new Frame(null, lastY - FRAME_HEIGHT, FRAME_HEIGHT));</span>
+                }
+<span class="nc" id="L112">            }</span>
+        }
+<span class="fc" id="L114">    }</span>
+
+    public void render(GraphicsContext gc, double roadWidth, double roadX) {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (frames.isEmpty()) {</span>
+<span class="nc" id="L118">            gc.setFill(Color.DARKGRAY);</span>
+<span class="nc" id="L119">            gc.fillRect(roadX, 0, roadWidth, FRAME_HEIGHT);</span>
+<span class="nc" id="L120">            gc.setFill(Color.WHITE);</span>
+<span class="nc" id="L121">            gc.fillText(&quot;Aucune frame chargée&quot;, roadX + roadWidth / 2 - 50, FRAME_HEIGHT / 2);</span>
+<span class="nc" id="L122">            return;</span>
+        }
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (useImages) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            for (Frame frame : frames) {</span>
+<span class="nc" id="L127">                frame.render(gc, roadWidth, roadX);</span>
+<span class="nc" id="L128">            }</span>
+        } else {
+<span class="nc" id="L130">            Color[] colors = {Color.LIGHTBLUE, Color.LIGHTGREEN, Color.LIGHTYELLOW};</span>
+<span class="nc" id="L131">            int colorIndex = 0;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            for (Frame frame : frames) {</span>
+<span class="nc" id="L133">                gc.setFill(colors[colorIndex % colors.length]);</span>
+<span class="nc" id="L134">                gc.fillRect(roadX, frame.getPositionY(), roadWidth, frame.getHauteur());</span>
+
+<span class="nc" id="L136">                gc.setStroke(Color.BLACK);</span>
+<span class="nc" id="L137">                gc.setLineWidth(2);</span>
+<span class="nc" id="L138">                gc.strokeRect(roadX + 5, frame.getPositionY() + 5, roadWidth - 10, frame.getHauteur() - 10);</span>
+
+<span class="nc" id="L140">                gc.setFill(Color.BLACK);</span>
+<span class="nc" id="L141">                gc.fillText(&quot;Frame &quot; + colorIndex + &quot; - Y: &quot; + (int) frame.getPositionY(),</span>
+<span class="nc" id="L142">                        roadX + roadWidth / 2 - 50, frame.getPositionY() + frame.getHauteur() / 2);</span>
+<span class="nc" id="L143">                colorIndex++;</span>
+<span class="nc" id="L144">            }</span>
+        }
+<span class="nc" id="L146">    }</span>
+    public List&lt;Frame&gt; getFrames() {
+<span class="fc" id="L148">        return frames;</span>
+    }
+
+    public double getVitesseDefilement() {
+<span class="fc" id="L152">        return vitesseDefilement;</span>
+    }
+
+    public int getFramesScrolled() {
+<span class="fc" id="L156">        return framesScrolled;</span>
+    }
+
+    public boolean isFinishLineReached() {
+<span class="pc bpc" id="L160" title="2 of 4 branches missed.">        return isMarioKartMode &amp;&amp; framesScrolled &gt;= 100;</span>
+    }
+
+    public void setVitesseDefilement(double vitesseDefilement) {
+<span class="fc" id="L164">        this.vitesseDefilement = vitesseDefilement;</span>
+<span class="fc" id="L165">    }</span>
+
+    public boolean isUseImages() {
+<span class="fc" id="L168">        return useImages;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

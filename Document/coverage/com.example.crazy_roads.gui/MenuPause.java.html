@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MenuPause.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.gui</a> &gt; <span class="el_source">MenuPause.java</span></div><h1>MenuPause.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.gui;
+
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+public class MenuPause {
+
+    private Scene previousScene;
+    private IGamePage gameInstance;
+    private boolean isMarioKartMode;
+
+<span class="nc" id="L20">    public MenuPause(Stage primaryStage, Scene gameScene, IGamePage gameInstance) {</span>
+<span class="nc" id="L21">        this.previousScene = gameScene;</span>
+<span class="nc" id="L22">        this.gameInstance = gameInstance;</span>
+<span class="nc" id="L23">        this.isMarioKartMode = gameInstance instanceof PageJeuMarioKart;</span>
+
+<span class="nc" id="L25">        StackPane root = new StackPane();</span>
+<span class="nc" id="L26">        root.setStyle(&quot;-fx-background-color: rgba(26, 26, 46, 0.95);&quot;);</span>
+
+<span class="nc" id="L28">        VBox menuBox = new VBox(25);</span>
+<span class="nc" id="L29">        menuBox.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L30">        menuBox.setMaxWidth(400);</span>
+
+<span class="nc" id="L32">        Text titre = new Text(&quot;PAUSE&quot;);</span>
+<span class="nc" id="L33">        titre.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 80));</span>
+<span class="nc" id="L34">        titre.setFill(Color.web(&quot;#ffaa00&quot;));</span>
+
+<span class="nc" id="L36">        Text info = new Text(&quot;Jeu en pause&quot;);</span>
+<span class="nc" id="L37">        info.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 18));</span>
+<span class="nc" id="L38">        info.setFill(Color.web(&quot;#888888&quot;));</span>
+
+<span class="nc" id="L40">        Button btnResume = createButton(&quot;REPRENDRE&quot;, &quot;#FF5722&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L41">        btnResume.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (gameInstance != null) {</span>
+<span class="nc" id="L43">                gameInstance.resume();</span>
+            }
+<span class="nc" id="L45">            primaryStage.setScene(previousScene);</span>
+<span class="nc" id="L46">        });</span>
+
+<span class="nc" id="L48">        Button btnReplay = createButton(&quot;RECOMMENCER&quot;, &quot;#FFEB3B&quot;, &quot;#000000&quot;);</span>
+<span class="nc" id="L49">        btnReplay.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (gameInstance != null) {</span>
+<span class="nc" id="L51">                gameInstance.stop();</span>
+            }
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (isMarioKartMode) {</span>
+<span class="nc" id="L54">                new PageJeuMarioKart(primaryStage);</span>
+            } else {
+<span class="nc" id="L56">                new PageJeuSubwaySurfers(primaryStage);</span>
+            }
+<span class="nc" id="L58">        });</span>
+
+<span class="nc" id="L60">        Button btnOptions = createButton(&quot;OPTIONS&quot;, &quot;#2196F3&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L61">        btnOptions.setOnAction(e -&gt; {</span>
+<span class="nc" id="L62">            Scene currentScene = primaryStage.getScene();</span>
+<span class="nc" id="L63">            new MenuOptions(primaryStage, currentScene);</span>
+<span class="nc" id="L64">        });</span>
+
+<span class="nc" id="L66">        Button btnMenu = createButton(&quot;MENU PRINCIPAL&quot;, &quot;#F44336&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L67">        btnMenu.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (gameInstance != null) {</span>
+<span class="nc" id="L69">                gameInstance.stop();</span>
+            }
+<span class="nc" id="L71">            new PageAccueil(primaryStage);</span>
+<span class="nc" id="L72">        });</span>
+
+<span class="nc" id="L74">        menuBox.getChildren().addAll(titre, info, btnResume, btnReplay, btnOptions, btnMenu);</span>
+<span class="nc" id="L75">        root.getChildren().add(menuBox);</span>
+
+<span class="nc" id="L77">        Scene pauseScene = new Scene(root, previousScene.getWidth(), previousScene.getHeight());</span>
+
+<span class="nc" id="L79">        pauseScene.setOnKeyPressed(event -&gt; {</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            switch (event.getCode()) {</span>
+                case ESCAPE:
+                case P:
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                    if (gameInstance != null) {</span>
+<span class="nc" id="L84">                        gameInstance.resume();</span>
+                    }
+<span class="nc" id="L86">                    primaryStage.setScene(previousScene);</span>
+                    break;
+            }
+<span class="nc" id="L89">        });</span>
+
+<span class="nc" id="L91">        primaryStage.setScene(pauseScene);</span>
+<span class="nc" id="L92">    }</span>
+
+    private Button createButton(String texte, String couleurBg, String couleurTexte) {
+<span class="nc" id="L95">        Button btn = new Button(texte);</span>
+<span class="nc" id="L96">        btn.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 26));</span>
+<span class="nc" id="L97">        btn.setPrefWidth(380);</span>
+<span class="nc" id="L98">        btn.setPrefHeight(65);</span>
+<span class="nc" id="L99">        btn.setTextFill(Color.web(couleurTexte));</span>
+<span class="nc" id="L100">        btn.setStyle(</span>
+                &quot;-fx-background-color: &quot; + couleurBg + &quot;;&quot; +
+                        &quot;-fx-border-color: #FFFFFF;&quot; +
+                        &quot;-fx-border-width: 3px;&quot; +
+                        &quot;-fx-border-radius: 10px;&quot; +
+                        &quot;-fx-background-radius: 10px;&quot; +
+                        &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);&quot;
+        );
+
+<span class="nc" id="L109">        btn.setOnMouseEntered(e -&gt; {</span>
+<span class="nc" id="L110">            btn.setStyle(</span>
+                    &quot;-fx-background-color: &quot; + couleurBg + &quot;;&quot; +
+                            &quot;-fx-border-color: #FFFFFF;&quot; +
+                            &quot;-fx-border-width: 4px;&quot; +
+                            &quot;-fx-border-radius: 10px;&quot; +
+                            &quot;-fx-background-radius: 10px;&quot; +
+                            &quot;-fx-effect: dropshadow(gaussian, rgba(255,255,255,0.8), 15, 0, 0, 0);&quot; +
+                            &quot;-fx-scale-x: 1.05;&quot; +
+                            &quot;-fx-scale-y: 1.05;&quot;
+            );
+<span class="nc" id="L120">        });</span>
+
+<span class="nc" id="L122">        btn.setOnMouseExited(e -&gt; {</span>
+<span class="nc" id="L123">            btn.setStyle(</span>
+                    &quot;-fx-background-color: &quot; + couleurBg + &quot;;&quot; +
+                            &quot;-fx-border-color: #FFFFFF;&quot; +
+                            &quot;-fx-border-width: 3px;&quot; +
+                            &quot;-fx-border-radius: 10px;&quot; +
+                            &quot;-fx-background-radius: 10px;&quot; +
+                            &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);&quot;
+            );
+<span class="nc" id="L131">        });</span>
+
+<span class="nc" id="L133">        return btn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

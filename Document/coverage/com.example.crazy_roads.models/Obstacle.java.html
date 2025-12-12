@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Obstacle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.models</a> &gt; <span class="el_source">Obstacle.java</span></div><h1>Obstacle.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.models;
+
+public class Obstacle {
+	protected int lane;
+	protected double speed;
+	protected double position;
+	protected double distance;
+	protected double size;
+	protected int damage;
+	protected boolean active;
+	protected int colorType;
+	
+	public int getLane() {
+<span class="fc" id="L14">		return lane;</span>
+	}
+	
+	public double getSpeed() {
+<span class="fc" id="L18">		return speed;</span>
+	}
+	
+	public double getSize() {
+<span class="fc" id="L22">		return size;</span>
+	}
+	
+	public double getDistance() {
+<span class="nc" id="L26">		return distance;</span>
+	}
+	
+	public double getPosition() {
+<span class="fc" id="L30">		return position;</span>
+	}
+	
+	public int getDamage() {
+<span class="fc" id="L34">		return damage;</span>
+	}
+	
+	public int getColorType() {
+<span class="fc" id="L38">		return colorType;</span>
+	}
+	
+	public void setColorType(int colorType) {
+<span class="fc" id="L42">		this.colorType = colorType;</span>
+<span class="fc" id="L43">	}</span>
+	
+	public void setLane(int lane) {
+<span class="fc" id="L46">		this.lane = lane;</span>
+<span class="fc" id="L47">	}</span>
+	
+	public void setSpeed(double speed) {
+<span class="fc" id="L50">		this.speed = speed;</span>
+<span class="fc" id="L51">	}</span>
+	
+	public void setPosition(double position) {
+<span class="fc" id="L54">		this.position = position;</span>
+<span class="fc" id="L55">	}</span>
+	
+	public void setDistance(double distance) {
+<span class="nc" id="L58">		this.distance = distance;</span>
+<span class="nc" id="L59">	}</span>
+	
+	public void setSize(double size) {
+<span class="fc" id="L62">		this.size = size;</span>
+<span class="fc" id="L63">	}</span>
+	
+	public void setDamage(int damage) {
+<span class="fc" id="L66">		this.damage = damage;</span>
+<span class="fc" id="L67">	}</span>
+	
+<span class="fc" id="L69">	public Obstacle(int lane, double speed, double position, double size, int damage) {</span>
+<span class="fc" id="L70">		this.lane = lane;</span>
+<span class="fc" id="L71">		this.speed = speed;</span>
+<span class="fc" id="L72">		this.position = position;</span>
+<span class="fc" id="L73">		this.size = size;</span>
+<span class="fc" id="L74">		this.damage = damage;</span>
+<span class="fc" id="L75">		this.active = true;</span>
+<span class="fc" id="L76">		this.colorType = 0;</span>
+<span class="fc" id="L77">	}</span>
+	
+	public void update(long deltaMs) {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">		if(!active) return;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">		if(speed != 0.0) {</span>
+<span class="nc" id="L82">			double deltaSec = deltaMs / 1000.0;</span>
+<span class="nc" id="L83">			this.distance += speed * deltaSec;</span>
+		}
+<span class="nc" id="L85">	}</span>
+	
+	public boolean collidesWith(Car v) {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">		if(!active) return false;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">		if(v == null) return false;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">		if(this.lane != v.getLane()) return false;</span>
+<span class="nc" id="L91">		double carPosition = 0.0;</span>
+<span class="nc" id="L92">		double carAppSize = 0.5;</span>
+<span class="nc" id="L93">		double distDiff = Math.abs(this.position - carPosition);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">		return distDiff &lt;= (this.size + carAppSize);</span>
+	}
+	
+	public boolean collidesWithScreenPosition(Car v, double carYPosition) {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">		if(!active) return false;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">		if(v == null) return false;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">		if(this.lane != v.getLane()) return false;</span>
+		// Vérifier si l'obstacle est proche de la Car sur l'écran
+<span class="nc" id="L102">		double distDiff = Math.abs(this.position - carYPosition);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">		return distDiff &lt;= 80.0; // Zone de collision</span>
+	}
+	
+	public boolean applyTo(Car v) {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">		if(!active) return false;</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">		if(v == null) return false;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">		if(collidesWith(v)) {</span>
+<span class="nc" id="L110">			v.collide();</span>
+<span class="nc" id="L111">			this.active = false;</span>
+		}
+<span class="nc" id="L113">		return true;</span>
+	}
+	public boolean applyToMK(Car c) {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">		if(!active) return false;</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">		if (c == null) return false;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">		if(collidesWith(c)) {</span>
+<span class="nc" id="L119">			c.collideMk();</span>
+<span class="nc" id="L120">			this.active = false;</span>
+		}
+<span class="nc" id="L122">		return true;</span>
+	}
+	
+	public boolean applyToMKScreenPosition(Car c, double carYPosition) {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		if(!active) return false;</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		if (c == null) return false;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">		if(collidesWithScreenPosition(c, carYPosition)) {</span>
+<span class="nc" id="L129">			c.collideMk();</span>
+<span class="nc" id="L130">			this.active = false;</span>
+		}
+<span class="nc" id="L132">		return true;</span>
+	}
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

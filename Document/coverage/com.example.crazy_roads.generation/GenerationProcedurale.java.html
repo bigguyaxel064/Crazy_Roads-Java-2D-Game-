@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GenerationProcedurale.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.generation</a> &gt; <span class="el_source">GenerationProcedurale.java</span></div><h1>GenerationProcedurale.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.generation;
+
+import com.example.crazy_roads.models.Obstacle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class GenerationProcedurale {
+    private Random random;
+    private double lastObstacleY;
+    private static final double MIN_DISTANCE_BETWEEN_OBSTACLES = 300;
+    private static final double OBSTACLE_SIZE = 60;
+    private static final int LANE_COUNT = 3;
+    
+<span class="fc" id="L15">    public GenerationProcedurale() {</span>
+<span class="fc" id="L16">        this.random = new Random();</span>
+<span class="fc" id="L17">        this.lastObstacleY = -500;</span>
+<span class="fc" id="L18">    }</span>
+    
+    public List&lt;Obstacle&gt; generateObstacles(double currentY) {
+<span class="fc" id="L21">        List&lt;Obstacle&gt; newObstacles = new ArrayList&lt;&gt;();</span>
+        
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (currentY - lastObstacleY &gt;= MIN_DISTANCE_BETWEEN_OBSTACLES) {</span>
+<span class="fc" id="L24">            double spawnY = -100;</span>
+<span class="fc" id="L25">            List&lt;Obstacle&gt; obstacleGroup = generateObstacleGroup(spawnY);</span>
+<span class="fc" id="L26">            newObstacles.addAll(obstacleGroup);</span>
+<span class="fc" id="L27">            lastObstacleY = currentY;</span>
+        }
+        
+<span class="fc" id="L30">        return newObstacles;</span>
+    }
+    
+    private List&lt;Obstacle&gt; generateObstacleGroup(double yPosition) {
+<span class="fc" id="L34">        List&lt;Obstacle&gt; obstacles = new ArrayList&lt;&gt;();</span>
+        
+<span class="fc" id="L36">        int freeLane = random.nextInt(LANE_COUNT);</span>
+        
+<span class="fc" id="L38">        int obstacleCount = random.nextInt(2) + 1;</span>
+        
+<span class="fc" id="L40">        List&lt;Integer&gt; occupiedLanes = new ArrayList&lt;&gt;();</span>
+        
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (int i = 0; i &lt; obstacleCount; i++) {</span>
+            int lane;
+            do {
+<span class="fc" id="L45">                lane = random.nextInt(LANE_COUNT);</span>
+<span class="fc bfc" id="L46" title="All 4 branches covered.">            } while (lane == freeLane || occupiedLanes.contains(lane));</span>
+            
+<span class="fc" id="L48">            occupiedLanes.add(lane);</span>
+            
+<span class="fc" id="L50">            Obstacle obstacle = new Obstacle(</span>
+                lane,
+                0.0,
+                yPosition,
+                OBSTACLE_SIZE,
+                1
+            );
+            
+<span class="fc" id="L58">            obstacles.add(obstacle);</span>
+        }
+        
+<span class="fc" id="L61">        return obstacles;</span>
+    }
+    
+    public void reset() {
+<span class="fc" id="L65">        this.lastObstacleY = -500;</span>
+<span class="fc" id="L66">    }</span>
+    
+    public void setMinDistance(double distance) {
+<span class="fc" id="L69">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

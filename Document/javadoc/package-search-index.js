@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.example.crazy_roads"},{"l":"com.example.crazy_roads.generation"},{"l":"com.example.crazy_roads.gui"},{"l":"com.example.crazy_roads.managers"},{"l":"com.example.crazy_roads.models"},{"l":"com.example.crazy_roads.modes"}];updateSearchResults();

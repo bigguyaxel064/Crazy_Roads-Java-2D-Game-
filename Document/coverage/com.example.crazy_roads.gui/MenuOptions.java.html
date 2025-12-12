@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MenuOptions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.gui</a> &gt; <span class="el_source">MenuOptions.java</span></div><h1>MenuOptions.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.gui;
+
+import com.example.crazy_roads.managers.Settings;
+import com.example.crazy_roads.managers.MusicManager;
+import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import java.util.function.Consumer;
+
+public class MenuOptions {
+    private final Settings settings;
+    private final Scene previousScene;
+    private final Stage primaryStage;
+    private final double initialMusicVol;
+    private final double initialSoundVol;
+    private final double initialScreenWidth;
+    private final double initialScreenHeight;
+    private final KeyCode initialLeftKey;
+    private final KeyCode initialRightKey;
+    private final KeyCode initialPauseKey;
+    private final KeyCode initialBoostKey;
+
+<span class="nc" id="L32">    public MenuOptions(Stage primaryStage, Scene previousScene) {</span>
+<span class="nc" id="L33">        this.primaryStage = primaryStage;</span>
+<span class="nc" id="L34">        this.previousScene = previousScene;</span>
+<span class="nc" id="L35">        this.settings = Settings.getInstance();</span>
+<span class="nc" id="L36">        this.initialMusicVol = settings.getMusicVolume();</span>
+<span class="nc" id="L37">        this.initialSoundVol = settings.getSoundVolume();</span>
+<span class="nc" id="L38">        this.initialScreenWidth = settings.getScreenWidth();</span>
+<span class="nc" id="L39">        this.initialScreenHeight = settings.getScreenHeight();</span>
+<span class="nc" id="L40">        this.initialLeftKey = settings.getLeftKey();</span>
+<span class="nc" id="L41">        this.initialRightKey = settings.getRightKey();</span>
+<span class="nc" id="L42">        this.initialPauseKey = settings.getPauseKey();</span>
+<span class="nc" id="L43">        this.initialBoostKey = settings.getBoostKey();</span>
+
+<span class="nc" id="L45">        showOptionsMenu();</span>
+<span class="nc" id="L46">    }</span>
+
+    private void showOptionsMenu() {
+<span class="nc" id="L49">        StackPane root = new StackPane();</span>
+<span class="nc" id="L50">        root.setStyle(&quot;-fx-background-color: #1a1a2e;&quot;);</span>
+
+<span class="nc" id="L52">        VBox mainBox = new VBox(20);</span>
+<span class="nc" id="L53">        mainBox.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L54">        mainBox.setStyle(&quot;-fx-padding: 30px;&quot;);</span>
+
+<span class="nc" id="L56">        Text titre = new Text(&quot;OPTIONS&quot;);</span>
+<span class="nc" id="L57">        titre.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 60));</span>
+<span class="nc" id="L58">        titre.setFill(Color.web(&quot;#ffaa00&quot;));</span>
+
+<span class="nc" id="L60">        TabPane tabPane = new TabPane();</span>
+<span class="nc" id="L61">        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);</span>
+<span class="nc" id="L62">        tabPane.setStyle(&quot;-fx-font-size: 14px;&quot;);</span>
+
+<span class="nc" id="L64">        Tab tabSound = createSoundTab();</span>
+<span class="nc" id="L65">        tabSound.setText(&quot;SON&quot;);</span>
+
+<span class="nc" id="L67">        Tab tabControls = createControlsTab();</span>
+<span class="nc" id="L68">        tabControls.setText(&quot;CONTRÔLES&quot;);</span>
+
+<span class="nc" id="L70">        Tab tabScreen = createScreenTab();</span>
+<span class="nc" id="L71">        tabScreen.setText(&quot;ÉCRAN&quot;);</span>
+
+<span class="nc" id="L73">        tabPane.getTabs().addAll(tabSound, tabControls, tabScreen);</span>
+<span class="nc" id="L74">        tabPane.setPrefHeight(420);</span>
+
+<span class="nc" id="L76">        HBox buttonBox = new HBox(20);</span>
+<span class="nc" id="L77">        buttonBox.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L79">        Button btnSave = createButton(&quot;APPLIQUER&quot;, &quot;#4CAF50&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L80">        btnSave.setOnAction(e -&gt; {</span>
+<span class="nc" id="L81">            settings.saveSettings();</span>
+<span class="nc" id="L82">             primaryStage.setWidth(settings.getScreenWidth());</span>
+<span class="nc" id="L83">             primaryStage.setHeight(settings.getScreenHeight());</span>
+<span class="nc" id="L84">            primaryStage.setScene(previousScene);</span>
+<span class="nc" id="L85">        });</span>
+
+<span class="nc" id="L87">        Button btnCancel = createButton(&quot;ANNULER&quot;, &quot;#F44336&quot;, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L88">        btnCancel.setOnAction(e -&gt; {</span>
+<span class="nc" id="L89">            settings.setMusicVolume(initialMusicVol);</span>
+<span class="nc" id="L90">            settings.setSoundVolume(initialSoundVol);</span>
+<span class="nc" id="L91">            settings.setScreenWidth(initialScreenWidth);</span>
+<span class="nc" id="L92">            settings.setScreenHeight(initialScreenHeight);</span>
+<span class="nc" id="L93">            settings.setLeftKey(initialLeftKey);</span>
+<span class="nc" id="L94">            settings.setRightKey(initialRightKey);</span>
+<span class="nc" id="L95">            settings.setPauseKey(initialPauseKey);</span>
+<span class="nc" id="L96">            settings.setBoostKey(initialBoostKey);</span>
+<span class="nc" id="L97">            primaryStage.setScene(previousScene);</span>
+<span class="nc" id="L98">            MusicManager.updateVolume();</span>
+<span class="nc" id="L99">        });</span>
+
+<span class="nc" id="L101">        buttonBox.getChildren().addAll(btnSave, btnCancel);</span>
+
+<span class="nc" id="L103">        mainBox.getChildren().addAll(titre, tabPane, buttonBox);</span>
+<span class="nc" id="L104">        root.getChildren().add(mainBox);</span>
+
+<span class="nc" id="L106">        Scene optionsScene = new Scene(root, 1200, 800);</span>
+<span class="nc" id="L107">        primaryStage.setScene(optionsScene);</span>
+<span class="nc" id="L108">    }</span>
+
+    private Tab createSoundTab() {
+<span class="nc" id="L111">        Tab tab = new Tab();</span>
+<span class="nc" id="L112">        tab.setClosable(false);</span>
+
+<span class="nc" id="L114">        VBox content = new VBox(20);</span>
+<span class="nc" id="L115">        content.setStyle(&quot;-fx-padding: 20px; -fx-background-color: #2a2a4e;&quot;);</span>
+<span class="nc" id="L116">        content.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L118">        HBox musicVolumeBox = createVolumeControl(</span>
+                &quot;Volume Musique&quot;,
+<span class="nc" id="L120">                settings.getMusicVolume(),</span>
+<span class="nc" id="L121">                value -&gt; settings.setMusicVolume(value)</span>
+        );
+
+<span class="nc" id="L124">        HBox soundVolumeBox = createVolumeControl(</span>
+                &quot;Volume Effets Sonores&quot;,
+<span class="nc" id="L126">                settings.getSoundVolume(),</span>
+<span class="nc" id="L127">                value -&gt; settings.setSoundVolume(value)</span>
+        );
+
+<span class="nc" id="L130">        content.getChildren().addAll( musicVolumeBox, soundVolumeBox);</span>
+<span class="nc" id="L131">        tab.setContent(content);</span>
+<span class="nc" id="L132">        return tab;</span>
+    }
+
+    private Tab createControlsTab() {
+<span class="nc" id="L136">        Tab tab = new Tab(&quot;Contrôles&quot;); // Donne un titre au Tab</span>
+<span class="nc" id="L137">        tab.setClosable(false);</span>
+
+<span class="nc" id="L139">        VBox content = new VBox(20);</span>
+<span class="nc" id="L140">        content.setStyle(&quot;-fx-padding: 20px; -fx-background-color: #2a2a4e;&quot;);</span>
+<span class="nc" id="L141">        content.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L143">        HBox leftKeyBox = createKeyBindingControl(</span>
+                &quot;Gauche&quot;,
+<span class="nc" id="L145">                settings.getLeftKey(),</span>
+<span class="nc" id="L146">                newKey -&gt; settings.setLeftKey(newKey)</span>
+        );
+
+<span class="nc" id="L149">        HBox rightKeyBox = createKeyBindingControl(</span>
+                &quot;Droite&quot;,
+<span class="nc" id="L151">                settings.getRightKey(),</span>
+<span class="nc" id="L152">                newKey -&gt; settings.setRightKey(newKey)</span>
+        );
+
+<span class="nc" id="L155">        HBox pauseKeyBox = createKeyBindingControl(</span>
+                &quot;Pause&quot;,
+<span class="nc" id="L157">                settings.getPauseKey(),</span>
+<span class="nc" id="L158">                newKey -&gt; settings.setPauseKey(newKey)</span>
+        );
+
+<span class="nc" id="L161">        HBox boostKeyBox = createKeyBindingControl(</span>
+                &quot;Boost&quot;,
+<span class="nc" id="L163">                settings.getBoostKey(),</span>
+<span class="nc" id="L164">                newKey -&gt; settings.setBoostKey(newKey)</span>
+        );
+
+<span class="nc" id="L167">        content.getChildren().addAll(leftKeyBox, rightKeyBox, boostKeyBox, pauseKeyBox);</span>
+<span class="nc" id="L168">        tab.setContent(content);</span>
+<span class="nc" id="L169">        return tab;</span>
+    }
+
+
+    private Tab createScreenTab() {
+<span class="nc" id="L174">        Tab tab = new Tab();</span>
+<span class="nc" id="L175">        tab.setClosable(false);</span>
+
+<span class="nc" id="L177">        VBox content = new VBox(20);</span>
+<span class="nc" id="L178">        content.setStyle(&quot;-fx-padding: 20px; -fx-background-color: #2a2a4e;&quot;);</span>
+<span class="nc" id="L179">        content.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L181">        HBox resolutionBox = new HBox(20);</span>
+<span class="nc" id="L182">        resolutionBox.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L183">        resolutionBox.setStyle(&quot;-fx-border-color: #444466; -fx-border-width: 1; -fx-padding: 15px; -fx-border-radius: 5;&quot;);</span>
+
+<span class="nc" id="L185">        Label labelResolution = createLabel(&quot;Résolution :&quot;);</span>
+
+<span class="nc" id="L187">        ComboBox&lt;String&gt; resolutionCombo = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L188">        resolutionCombo.setPrefWidth(300);</span>
+<span class="nc" id="L189">        resolutionCombo.getItems().addAll(</span>
+                &quot;1280x720&quot;,
+                &quot;1366x768&quot;,
+                &quot;1600x900&quot;,
+                &quot;1920x1080&quot;,
+                &quot;2560x1440&quot;
+        );
+<span class="nc" id="L196">        String currentRes = (int)settings.getScreenWidth() + &quot;x&quot; + (int)settings.getScreenHeight();</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (resolutionCombo.getItems().contains(currentRes)) {</span>
+<span class="nc" id="L198">            resolutionCombo.setValue(currentRes);</span>
+        }
+        else {
+<span class="nc" id="L201">            resolutionCombo.setValue(&quot;1920x1080&quot;);</span>
+        }
+
+<span class="nc" id="L204">        resolutionCombo.setOnAction(e -&gt; {</span>
+<span class="nc" id="L205">            String selected = resolutionCombo.getValue();</span>
+            try {
+<span class="nc" id="L207">                String[] parts = selected.split(&quot;x&quot;);</span>
+<span class="nc" id="L208">                double w = Double.parseDouble(parts[0]);</span>
+<span class="nc" id="L209">                double h = Double.parseDouble(parts[1]);</span>
+<span class="nc" id="L210">                settings.setScreenWidth(w);</span>
+<span class="nc" id="L211">                settings.setScreenHeight(h);</span>
+<span class="nc" id="L212">            } catch (Exception ex) {</span>
+<span class="nc" id="L213">            }</span>
+<span class="nc" id="L214">        });</span>
+
+<span class="nc" id="L216">        resolutionBox.getChildren().addAll(labelResolution, resolutionCombo);</span>
+
+<span class="nc" id="L218">        content.getChildren().addAll(resolutionBox);</span>
+<span class="nc" id="L219">        tab.setContent(content);</span>
+<span class="nc" id="L220">        return tab;</span>
+    }
+
+    private HBox createVolumeControl(String label, double currentValue, Consumer&lt;Double&gt; onChange) {
+<span class="nc" id="L224">        HBox box = new HBox(20);</span>
+<span class="nc" id="L225">        box.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L226">        box.setStyle(&quot;-fx-border-color: #444466; -fx-border-width: 1; -fx-padding: 15px; -fx-border-radius: 5;&quot;);</span>
+
+<span class="nc" id="L228">        Label labelText = createLabel(label + &quot; :&quot;);</span>
+
+<span class="nc" id="L230">        Slider slider = new Slider(0, 1, currentValue);</span>
+<span class="nc" id="L231">        slider.setPrefWidth(400);</span>
+<span class="nc" id="L232">        slider.setShowTickLabels(false);</span>
+<span class="nc" id="L233">        slider.setShowTickMarks(true);</span>
+<span class="nc" id="L234">        slider.setBlockIncrement(0.1);</span>
+
+<span class="nc" id="L236">        Label percentageText = new Label((int) (currentValue * 100) + &quot;%&quot;);</span>
+<span class="nc" id="L237">        percentageText.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 18));</span>
+<span class="nc" id="L238">        percentageText.setTextFill(Color.web(&quot;#ffaa00&quot;));</span>
+<span class="nc" id="L239">        percentageText.setMinWidth(50);</span>
+
+<span class="nc" id="L241">        slider.valueProperty().addListener((obs, oldVal, newVal) -&gt; {</span>
+<span class="nc" id="L242">            percentageText.setText((int) (newVal.doubleValue() * 100) + &quot;%&quot;);</span>
+<span class="nc" id="L243">            onChange.accept(newVal.doubleValue());</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            if (label.contains(&quot;Musique&quot;)) {</span>
+<span class="nc" id="L245">                MusicManager.updateVolume();</span>
+            }
+<span class="nc" id="L247">        });</span>
+
+<span class="nc" id="L249">        box.getChildren().addAll(labelText, slider, percentageText);</span>
+<span class="nc" id="L250">        return box;</span>
+    }
+
+    private HBox createKeyBindingControl(String label, KeyCode currentKey, Consumer&lt;KeyCode&gt; onChange) {
+<span class="nc" id="L254">        HBox box = new HBox(20);</span>
+<span class="nc" id="L255">        box.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L256">        box.setStyle(&quot;-fx-border-color: #444466; -fx-border-width: 1; -fx-padding: 15px; -fx-border-radius: 5;&quot;);</span>
+
+<span class="nc" id="L258">        Label labelText = createLabel(label + &quot; :&quot;);</span>
+
+<span class="nc" id="L260">        Button keyButton = new Button(currentKey.toString());</span>
+<span class="nc" id="L261">        keyButton.setPrefWidth(250);</span>
+<span class="nc" id="L262">        keyButton.setPrefHeight(40);</span>
+<span class="nc" id="L263">        keyButton.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 16));</span>
+<span class="nc" id="L264">        keyButton.setStyle(</span>
+                &quot;-fx-background-color: #ffaa00; &quot; +
+                        &quot;-fx-text-fill: #000000; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-border-radius: 5; &quot; +
+                        &quot;-fx-padding: 10px;&quot;
+        );
+
+<span class="nc" id="L272">        keyButton.setOnAction(e -&gt; {</span>
+<span class="nc" id="L273">            keyButton.setText(&quot;Appuyez sur une touche&quot;);</span>
+<span class="nc" id="L274">            keyButton.setStyle(</span>
+                    &quot;-fx-background-color: #ff6b6b; &quot; +
+                            &quot;-fx-text-fill: #ffffff; &quot; +
+                            &quot;-fx-font-weight: bold; &quot; +
+                            &quot;-fx-border-radius: 5; &quot; +
+                            &quot;-fx-padding: 10px;&quot;
+            );
+
+<span class="nc" id="L282">            Scene scene = keyButton.getScene();</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">            if (scene == null) return;</span>
+
+<span class="nc" id="L285">            EventHandler&lt;? super KeyEvent&gt; oldHandler = scene.getOnKeyPressed();</span>
+
+<span class="nc" id="L287">            scene.setOnKeyPressed(event -&gt; {</span>
+<span class="nc" id="L288">                KeyCode newKey = event.getCode();</span>
+<span class="nc" id="L289">                keyButton.setText(newKey.toString());</span>
+<span class="nc" id="L290">                keyButton.setStyle(</span>
+                        &quot;-fx-background-color: #4CAF50; &quot; +
+                                &quot;-fx-text-fill: #ffffff; &quot; +
+                                &quot;-fx-font-weight: bold; &quot; +
+                                &quot;-fx-border-radius: 5; &quot; +
+                                &quot;-fx-padding: 10px;&quot;
+                );
+<span class="nc" id="L297">                onChange.accept(newKey);</span>
+
+<span class="nc" id="L299">                scene.setOnKeyPressed(oldHandler);</span>
+<span class="nc" id="L300">            });</span>
+<span class="nc" id="L301">        });</span>
+
+<span class="nc" id="L303">        box.getChildren().addAll(labelText, keyButton);</span>
+<span class="nc" id="L304">        return box;</span>
+    }
+
+
+    private Label createLabel(String text) {
+<span class="nc" id="L309">        Label label = new Label(text);</span>
+<span class="nc" id="L310">        label.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 18));</span>
+<span class="nc" id="L311">        label.setTextFill(Color.web(&quot;#ffffff&quot;));</span>
+<span class="nc" id="L312">        label.setMinWidth(150);</span>
+<span class="nc" id="L313">        return label;</span>
+    }
+
+    private Button createButton(String texte, String couleurBg, String couleurTexte) {
+<span class="nc" id="L317">        Button btn = new Button(texte);</span>
+<span class="nc" id="L318">        btn.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 20));</span>
+<span class="nc" id="L319">        btn.setPrefWidth(200);</span>
+<span class="nc" id="L320">        btn.setPrefHeight(50);</span>
+<span class="nc" id="L321">        btn.setTextFill(Color.web(couleurTexte));</span>
+<span class="nc" id="L322">        btn.setStyle(</span>
+                &quot;-fx-background-color: &quot; + couleurBg + &quot;;&quot; +
+                        &quot;-fx-border-color: #FFFFFF;&quot; +
+                        &quot;-fx-border-width: 2px;&quot; +
+                        &quot;-fx-border-radius: 10px;&quot; +
+                        &quot;-fx-background-radius: 10px;&quot; +
+                        &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);&quot;
+        );
+
+<span class="nc" id="L331">        btn.setOnMouseEntered(e -&gt; btn.setScaleX(1.03));</span>
+<span class="nc" id="L332">        btn.setOnMouseExited(e -&gt; btn.setScaleX(1.0));</span>
+
+<span class="nc" id="L334">        return btn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

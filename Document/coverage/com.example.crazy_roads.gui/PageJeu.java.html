@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PageJeu.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Crazy_Roads</a> &gt; <a href="index.source.html" class="el_package">com.example.crazy_roads.gui</a> &gt; <span class="el_source">PageJeu.java</span></div><h1>PageJeu.java</h1><pre class="source lang-java linenums">package com.example.crazy_roads.gui;
+
+import com.example.crazy_roads.models.Map;
+import com.example.crazy_roads.models.Obstacle;
+import com.example.crazy_roads.models.Car;
+import javafx.animation.AnimationTimer;
+import javafx.geometry.VPos;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+/**
+ * Jeu Crazy Roads - Mode de jeu jouable
+ */
+public class PageJeu {
+    
+    private Stage primaryStage;
+    private String modeDeJeu;
+    private Canvas canvas;
+    private GraphicsContext gc;
+    private AnimationTimer gameLoop;
+    
+    // Éléments du jeu
+    private Car Car;
+    private Map Map;
+    private List&lt;Obstacle&gt; obstacles;
+    private Random random;
+    
+    // État du jeu
+<span class="nc" id="L43">    private boolean isPaused = false;</span>
+<span class="nc" id="L44">    private boolean isGameOver = false;</span>
+<span class="nc" id="L45">    private int score = 0;</span>
+<span class="nc" id="L46">    private long lastTime = 0;</span>
+<span class="nc" id="L47">    private long obstacleSpawnTimer = 0;</span>
+<span class="nc" id="L48">    private long gameStartTime = 0;</span>
+<span class="nc" id="L49">    private long gameDuration = 0; // Pour mode contre la montre</span>
+    
+    // Gestion des touches
+<span class="nc" id="L52">    private Set&lt;KeyCode&gt; pressedKeys = new HashSet&lt;&gt;();</span>
+    
+    // Constantes
+    private static final double CANVAS_WIDTH = 800;
+    private static final double CANVAS_HEIGHT = 600;
+    private static final int LANE_WIDTH = 200;
+    private static final int LANE_OFFSET = 100;
+    private static final long OBSTACLE_SPAWN_INTERVAL_MS = 2000; // Toutes les 2 secondes
+
+<span class="nc" id="L61">    public PageJeu(Stage primaryStage, String modeDeJeu) {</span>
+<span class="nc" id="L62">        this.primaryStage = primaryStage;</span>
+<span class="nc" id="L63">        this.modeDeJeu = modeDeJeu;</span>
+<span class="nc" id="L64">        this.random = new Random();</span>
+        
+        // Durée du jeu pour mode contre la montre (60 secondes)
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (modeDeJeu.equals(&quot;CONTRE LA MONTRE&quot;)) {</span>
+<span class="nc" id="L68">            this.gameDuration = 60000; // 60 secondes</span>
+        }
+        
+<span class="nc" id="L71">        initializeGame();</span>
+<span class="nc" id="L72">        afficherPageJeu();</span>
+<span class="nc" id="L73">    }</span>
+
+    private void initializeGame() {
+<span class="nc" id="L76">        Car = new Car();</span>
+<span class="nc" id="L77">        Map = new Map(1);</span>
+<span class="nc" id="L78">        obstacles = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L79">        score = 0;</span>
+<span class="nc" id="L80">        isPaused = false;</span>
+<span class="nc" id="L81">        isGameOver = false;</span>
+<span class="nc" id="L82">        gameStartTime = System.currentTimeMillis();</span>
+<span class="nc" id="L83">    }</span>
+
+    private void afficherPageJeu() {
+<span class="nc" id="L86">        StackPane root = new StackPane();</span>
+<span class="nc" id="L87">        root.setStyle(&quot;-fx-background-color: #1a1a2e;&quot;);</span>
+
+<span class="nc" id="L89">        canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);</span>
+<span class="nc" id="L90">        gc = canvas.getGraphicsContext2D();</span>
+        
+<span class="nc" id="L92">        root.getChildren().add(canvas);</span>
+
+<span class="nc" id="L94">        Scene gameScene = new Scene(root, CANVAS_WIDTH, CANVAS_HEIGHT);</span>
+        
+        // Gestion des touches
+<span class="nc" id="L97">        gameScene.setOnKeyPressed(event -&gt; {</span>
+<span class="nc" id="L98">            pressedKeys.add(event.getCode());</span>
+            
+            // Actions immédiates
+<span class="nc bnc" id="L101" title="All 4 branches missed.">            if (event.getCode() == KeyCode.ESCAPE || event.getCode() == KeyCode.P) {</span>
+<span class="nc" id="L102">                togglePause();</span>
+            }
+<span class="nc bnc" id="L104" title="All 4 branches missed.">            if (event.getCode() == KeyCode.R &amp;&amp; isGameOver) {</span>
+<span class="nc" id="L105">                restart();</span>
+            }
+<span class="nc bnc" id="L107" title="All 4 branches missed.">            if (event.getCode() == KeyCode.M &amp;&amp; isGameOver) {</span>
+<span class="nc" id="L108">                new PageAccueil(primaryStage);</span>
+            }
+<span class="nc" id="L110">        });</span>
+        
+<span class="nc" id="L112">        gameScene.setOnKeyReleased(event -&gt; {</span>
+<span class="nc" id="L113">            pressedKeys.remove(event.getCode());</span>
+<span class="nc" id="L114">        });</span>
+
+<span class="nc" id="L116">        primaryStage.setScene(gameScene);</span>
+        
+        // Démarrer la boucle de jeu
+<span class="nc" id="L119">        demarrerGameLoop();</span>
+<span class="nc" id="L120">    }</span>
+
+    private void demarrerGameLoop() {
+<span class="nc" id="L123">        lastTime = System.nanoTime();</span>
+        
+<span class="nc" id="L125">        gameLoop = new AnimationTimer() {</span>
+            @Override
+            public void handle(long now) {
+<span class="nc bnc" id="L128" title="All 4 branches missed.">                if (isPaused || isGameOver) {</span>
+<span class="nc" id="L129">                    return;</span>
+                }
+                
+<span class="nc" id="L132">                long deltaMs = (now - lastTime) / 1_000_000; // Convertir en millisecondes</span>
+<span class="nc" id="L133">                lastTime = now;</span>
+                
+<span class="nc" id="L135">                update(deltaMs);</span>
+<span class="nc" id="L136">                render();</span>
+<span class="nc" id="L137">            }</span>
+        };
+<span class="nc" id="L139">        gameLoop.start();</span>
+<span class="nc" id="L140">    }</span>
+
+    private void update(long deltaMs) {
+        // Vérifier la fin du mode contre la montre
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (modeDeJeu.equals(&quot;CONTRE LA MONTRE&quot;)) {</span>
+<span class="nc" id="L145">            long elapsed = System.currentTimeMillis() - gameStartTime;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            if (elapsed &gt;= gameDuration) {</span>
+<span class="nc" id="L147">                gameOver(true); // Victoire</span>
+<span class="nc" id="L148">                return;</span>
+            }
+        }
+        
+        // Déplacer la Car
+<span class="nc bnc" id="L153" title="All 6 branches missed.">        if (pressedKeys.contains(KeyCode.LEFT) || pressedKeys.contains(KeyCode.Q) || pressedKeys.contains(KeyCode.A)) {</span>
+<span class="nc" id="L154">            Car.moveLeft();</span>
+<span class="nc" id="L155">            pressedKeys.remove(KeyCode.LEFT);</span>
+<span class="nc" id="L156">            pressedKeys.remove(KeyCode.Q);</span>
+<span class="nc" id="L157">            pressedKeys.remove(KeyCode.A);</span>
+        }
+<span class="nc bnc" id="L159" title="All 4 branches missed.">        if (pressedKeys.contains(KeyCode.RIGHT) || pressedKeys.contains(KeyCode.D)) {</span>
+<span class="nc" id="L160">            Car.moveRight();</span>
+<span class="nc" id="L161">            pressedKeys.remove(KeyCode.RIGHT);</span>
+<span class="nc" id="L162">            pressedKeys.remove(KeyCode.D);</span>
+        }
+        
+        // Mettre à jour la Map
+<span class="nc" id="L166">        Map.update();</span>
+        
+        // Mettre à jour le boost
+<span class="nc" id="L169">        Car.updateBoost();</span>
+<span class="nc" id="L170">        Car.invulnerable();</span>
+        
+        // Générer des obstacles
+<span class="nc" id="L173">        obstacleSpawnTimer += deltaMs;</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (obstacleSpawnTimer &gt;= OBSTACLE_SPAWN_INTERVAL_MS) {</span>
+<span class="nc" id="L175">            genererObstacle();</span>
+<span class="nc" id="L176">            obstacleSpawnTimer = 0;</span>
+        }
+        
+        // Mettre à jour les obstacles
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        for (int i = obstacles.size() - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L181">            Obstacle obs = obstacles.get(i);</span>
+            
+            // Déplacer l'obstacle vers le bas
+<span class="nc" id="L184">            obs.setPosition(obs.getPosition() + Map.getScrollSpeed());</span>
+            
+            // Vérifier collision
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (isObstacleNearCar(obs)) {</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">                if (obs.getLane() == Car.getLane() &amp;&amp; !Car.isCollide()) {</span>
+<span class="nc" id="L189">                    Car.collide();</span>
+<span class="nc" id="L190">                    obstacles.remove(i);</span>
+                    
+                    // Game over si plus de vie
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                    if (!Car.isAlive()) {</span>
+<span class="nc" id="L194">                        gameOver(false);</span>
+                    }
+                }
+            }
+            // Supprimer si hors écran
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            else if (obs.getPosition() &gt; CANVAS_HEIGHT + 100) {</span>
+<span class="nc" id="L200">                obstacles.remove(i);</span>
+<span class="nc" id="L201">                score += 10; // Points pour avoir évité l'obstacle</span>
+            }
+        }
+<span class="nc" id="L204">    }</span>
+
+    private void genererObstacle() {
+<span class="nc" id="L207">        int lane = random.nextInt(3); // 0, 1 ou 2</span>
+<span class="nc" id="L208">        double position = -100; // Hors écran en haut</span>
+<span class="nc" id="L209">        double size = 50 + random.nextDouble() * 50; // Taille variable</span>
+        
+<span class="nc" id="L211">        Obstacle obs = new Obstacle(lane, Map.getScrollSpeed(), position, size, 1);</span>
+<span class="nc" id="L212">        obstacles.add(obs);</span>
+<span class="nc" id="L213">    }</span>
+
+    private boolean isObstacleNearCar(Obstacle obs) {
+<span class="nc" id="L216">        double carY = CANVAS_HEIGHT - 150; // Position fixe de la Car</span>
+<span class="nc bnc" id="L217" title="All 4 branches missed.">        return obs.getPosition() &gt;= carY - 100 &amp;&amp; obs.getPosition() &lt;= carY + 100;</span>
+    }
+
+    private void render() {
+<span class="nc" id="L221">        Map.render(gc, CANVAS_WIDTH, 0);</span>
+        
+<span class="nc" id="L223">        dessinerVoies();</span>
+        
+        // Dessiner les obstacles
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        for (Obstacle obs : obstacles) {</span>
+<span class="nc" id="L227">            dessinerObstacle(obs);</span>
+<span class="nc" id="L228">        }</span>
+        
+        // Dessiner la Car
+<span class="nc" id="L231">        dessinerVoiture();</span>
+        
+        // Dessiner l'interface (score, vie, temps)
+<span class="nc" id="L234">        dessinerHUD();</span>
+        
+        // Afficher pause ou game over
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (isPaused) {</span>
+<span class="nc" id="L238">            afficherPause();</span>
+        }
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        if (isGameOver) {</span>
+<span class="nc" id="L241">            afficherGameOver();</span>
+        }
+<span class="nc" id="L243">    }</span>
+
+    private void dessinerVoies() {
+<span class="nc" id="L246">        gc.setStroke(Color.WHITE);</span>
+<span class="nc" id="L247">        gc.setLineWidth(3);</span>
+<span class="nc" id="L248">        gc.setLineDashes(20, 20);</span>
+        
+        // Ligne entre voie 0 et 1
+<span class="nc" id="L251">        double x1 = LANE_OFFSET + LANE_WIDTH;</span>
+<span class="nc" id="L252">        gc.strokeLine(x1, 0, x1, CANVAS_HEIGHT);</span>
+        
+        // Ligne entre voie 1 et 2
+<span class="nc" id="L255">        double x2 = LANE_OFFSET + LANE_WIDTH * 2;</span>
+<span class="nc" id="L256">        gc.strokeLine(x2, 0, x2, CANVAS_HEIGHT);</span>
+        
+<span class="nc" id="L258">        gc.setLineDashes(null);</span>
+<span class="nc" id="L259">    }</span>
+
+    private void dessinerVoiture() {
+<span class="nc" id="L262">        double carX = LANE_OFFSET + (Car.getLane() * LANE_WIDTH) + LANE_WIDTH / 2;</span>
+<span class="nc" id="L263">        double carY = CANVAS_HEIGHT - 150;</span>
+        
+        // Effet clignotant si collision
+<span class="nc bnc" id="L266" title="All 4 branches missed.">        if (Car.isCollide() &amp;&amp; System.currentTimeMillis() % 400 &lt; 200) {</span>
+<span class="nc" id="L267">            gc.setFill(Color.RED);</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        } else if (Car.isBoostActive()) {</span>
+<span class="nc" id="L269">            gc.setFill(Color.GOLD);</span>
+        } else {
+<span class="nc" id="L271">            gc.setFill(Color.LIMEGREEN);</span>
+        }
+        
+        // Carrosserie
+<span class="nc" id="L275">        gc.fillRoundRect(carX - 40, carY - 60, 80, 120, 10, 10);</span>
+        
+        // Toit
+<span class="nc" id="L278">        gc.setFill(Color.DARKBLUE);</span>
+<span class="nc" id="L279">        gc.fillRoundRect(carX - 35, carY - 40, 70, 60, 10, 10);</span>
+        
+        // Roues
+<span class="nc" id="L282">        gc.setFill(Color.BLACK);</span>
+<span class="nc" id="L283">        gc.fillOval(carX - 45, carY - 50, 20, 30);</span>
+<span class="nc" id="L284">        gc.fillOval(carX + 25, carY - 50, 20, 30);</span>
+<span class="nc" id="L285">        gc.fillOval(carX - 45, carY + 20, 20, 30);</span>
+<span class="nc" id="L286">        gc.fillOval(carX + 25, carY + 20, 20, 30);</span>
+<span class="nc" id="L287">    }</span>
+
+    private void dessinerObstacle(Obstacle obs) {
+<span class="nc" id="L290">        double obsX = LANE_OFFSET + (obs.getLane() * LANE_WIDTH) + LANE_WIDTH / 2;</span>
+<span class="nc" id="L291">        double obsY = obs.getPosition();</span>
+<span class="nc" id="L292">        double size = obs.getSize();</span>
+        
+        // Obstacle rouge
+<span class="nc" id="L295">        gc.setFill(Color.ORANGERED);</span>
+<span class="nc" id="L296">        gc.fillRect(obsX - size / 2, obsY - size / 2, size, size);</span>
+        
+        // Bordure
+<span class="nc" id="L299">        gc.setStroke(Color.DARKRED);</span>
+<span class="nc" id="L300">        gc.setLineWidth(3);</span>
+<span class="nc" id="L301">        gc.strokeRect(obsX - size / 2, obsY - size / 2, size, size);</span>
+<span class="nc" id="L302">    }</span>
+
+    private void dessinerHUD() {
+<span class="nc" id="L305">        gc.setFill(Color.WHITE);</span>
+<span class="nc" id="L306">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 24));</span>
+        
+        // Score
+<span class="nc" id="L309">        gc.fillText(&quot;SCORE: &quot; + score, 20, 40);</span>
+        
+        // Vies
+<span class="nc" id="L312">        gc.fillText(&quot;VIES: &quot; + &quot;❤️&quot;.repeat(Math.max(0, Car.getLife())), 20, 70);</span>
+        
+        // Vitesse
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        if (Car.isBoostActive()) {</span>
+<span class="nc" id="L316">            gc.setFill(Color.GOLD);</span>
+<span class="nc" id="L317">            gc.fillText(&quot;⚡ BOOST! ⚡&quot;, CANVAS_WIDTH - 180, 40);</span>
+<span class="nc" id="L318">            gc.setFill(Color.WHITE);</span>
+        }
+        
+        // Temps pour mode contre la montre
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (modeDeJeu.equals(&quot;CONTRE LA MONTRE&quot;)) {</span>
+<span class="nc" id="L323">            long elapsed = System.currentTimeMillis() - gameStartTime;</span>
+<span class="nc" id="L324">            long remaining = (gameDuration - elapsed) / 1000;</span>
+<span class="nc" id="L325">            gc.fillText(&quot;TEMPS: &quot; + remaining + &quot;s&quot;, CANVAS_WIDTH - 200, 70);</span>
+        }
+<span class="nc" id="L327">    }</span>
+
+    private void afficherPause() {
+<span class="nc" id="L330">        gc.setFill(Color.rgb(0, 0, 0, 0.7));</span>
+<span class="nc" id="L331">        gc.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);</span>
+        
+<span class="nc" id="L333">        gc.setFill(Color.WHITE);</span>
+<span class="nc" id="L334">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 60));</span>
+<span class="nc" id="L335">        gc.setTextAlign(TextAlignment.CENTER);</span>
+<span class="nc" id="L336">        gc.setTextBaseline(VPos.CENTER);</span>
+<span class="nc" id="L337">        gc.fillText(&quot;PAUSE&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);</span>
+        
+<span class="nc" id="L339">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 24));</span>
+<span class="nc" id="L340">        gc.fillText(&quot;Appuyez sur P ou ECHAP pour reprendre&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);</span>
+        
+<span class="nc" id="L342">        gc.setTextAlign(TextAlignment.LEFT);</span>
+<span class="nc" id="L343">        gc.setTextBaseline(VPos.BASELINE);</span>
+<span class="nc" id="L344">    }</span>
+
+    private void afficherGameOver() {
+<span class="nc" id="L347">        gc.setFill(Color.rgb(0, 0, 0, 0.8));</span>
+<span class="nc" id="L348">        gc.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);</span>
+        
+<span class="nc" id="L350">        gc.setFill(Color.RED);</span>
+<span class="nc" id="L351">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 70));</span>
+<span class="nc" id="L352">        gc.setTextAlign(TextAlignment.CENTER);</span>
+<span class="nc" id="L353">        gc.setTextBaseline(VPos.CENTER);</span>
+<span class="nc" id="L354">        gc.fillText(&quot;GAME OVER&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 100);</span>
+        
+<span class="nc" id="L356">        gc.setFill(Color.WHITE);</span>
+<span class="nc" id="L357">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 36));</span>
+<span class="nc" id="L358">        gc.fillText(&quot;Score Final: &quot; + score, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20);</span>
+        
+<span class="nc" id="L360">        gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 20));</span>
+<span class="nc" id="L361">        gc.fillText(&quot;R - Recommencer&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 40);</span>
+<span class="nc" id="L362">        gc.fillText(&quot;M - Menu Principal&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 70);</span>
+        
+<span class="nc" id="L364">        gc.setTextAlign(TextAlignment.LEFT);</span>
+<span class="nc" id="L365">        gc.setTextBaseline(VPos.BASELINE);</span>
+<span class="nc" id="L366">    }</span>
+
+    private void togglePause() {
+<span class="nc bnc" id="L369" title="All 2 branches missed.">        if (isGameOver) return;</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">        isPaused = !isPaused;</span>
+        
+<span class="nc bnc" id="L372" title="All 2 branches missed.">        if (!isPaused) {</span>
+<span class="nc" id="L373">            lastTime = System.nanoTime(); // Réinitialiser le temps</span>
+        }
+<span class="nc" id="L375">    }</span>
+
+    private void gameOver(boolean victory) {
+<span class="nc" id="L378">        isGameOver = true;</span>
+<span class="nc" id="L379">        gameLoop.stop();</span>
+        
+<span class="nc bnc" id="L381" title="All 2 branches missed.">        if (victory) {</span>
+            // Affichage victoire pour mode contre la montre
+<span class="nc" id="L383">            gc.setFill(Color.rgb(0, 0, 0, 0.8));</span>
+<span class="nc" id="L384">            gc.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);</span>
+            
+<span class="nc" id="L386">            gc.setFill(Color.GOLD);</span>
+<span class="nc" id="L387">            gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 70));</span>
+<span class="nc" id="L388">            gc.setTextAlign(TextAlignment.CENTER);</span>
+<span class="nc" id="L389">            gc.setTextBaseline(VPos.CENTER);</span>
+<span class="nc" id="L390">            gc.fillText(&quot;🏆 VICTOIRE! 🏆&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 100);</span>
+            
+<span class="nc" id="L392">            gc.setFill(Color.WHITE);</span>
+<span class="nc" id="L393">            gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.BOLD, 36));</span>
+<span class="nc" id="L394">            gc.fillText(&quot;Score Final: &quot; + score, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20);</span>
+            
+<span class="nc" id="L396">            gc.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 20));</span>
+<span class="nc" id="L397">            gc.fillText(&quot;R - Recommencer&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 40);</span>
+<span class="nc" id="L398">            gc.fillText(&quot;M - Menu Principal&quot;, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 70);</span>
+            
+<span class="nc" id="L400">            gc.setTextAlign(TextAlignment.LEFT);</span>
+<span class="nc" id="L401">            gc.setTextBaseline(VPos.BASELINE);</span>
+        }
+<span class="nc" id="L403">    }</span>
+
+    private void restart() {
+<span class="nc" id="L406">        gameLoop.stop();</span>
+<span class="nc" id="L407">        new PageJeu(primaryStage, modeDeJeu);</span>
+<span class="nc" id="L408">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
